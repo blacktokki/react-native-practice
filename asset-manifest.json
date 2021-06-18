@@ -1,11 +1,11 @@
 {
   "files": {
-    "app.js": "/node-repository/static/js/app.23c5c509.chunk.js",
-    "app.js.map": "/node-repository/static/js/app.23c5c509.chunk.js.map",
+    "app.js": "/node-repository/static/js/app.0975a565.chunk.js",
+    "app.js.map": "/node-repository/static/js/app.0975a565.chunk.js.map",
     "runtime~app.js": "/node-repository/static/js/runtime~app.aa288422.js",
     "runtime~app.js.map": "/node-repository/static/js/runtime~app.aa288422.js.map",
-    "static/js/2.5e04b86c.chunk.js": "/node-repository/static/js/2.5e04b86c.chunk.js",
-    "static/js/2.5e04b86c.chunk.js.map": "/node-repository/static/js/2.5e04b86c.chunk.js.map",
+    "static/js/2.7c5fa97f.chunk.js": "/node-repository/static/js/2.7c5fa97f.chunk.js",
+    "static/js/2.7c5fa97f.chunk.js.map": "/node-repository/static/js/2.7c5fa97f.chunk.js.map",
     "fonts/AntDesign.ttf": "/node-repository/./fonts/AntDesign.ttf",
     "fonts/Entypo.ttf": "/node-repository/./fonts/Entypo.ttf",
     "fonts/Feather.ttf": "/node-repository/./fonts/Feather.ttf",
@@ -25,11 +25,11 @@
     "index.html": "/node-repository/index.html",
     "manifest.json": "/node-repository/manifest.json",
     "serve.json": "/node-repository/serve.json",
-    "static/js/2.5e04b86c.chunk.js.LICENSE.txt": "/node-repository/static/js/2.5e04b86c.chunk.js.LICENSE.txt"
+    "static/js/2.7c5fa97f.chunk.js.LICENSE.txt": "/node-repository/static/js/2.7c5fa97f.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime~app.aa288422.js",
-    "static/js/2.5e04b86c.chunk.js",
-    "static/js/app.23c5c509.chunk.js"
+    "static/js/2.7c5fa97f.chunk.js",
+    "static/js/app.0975a565.chunk.js"
   ]
 }
