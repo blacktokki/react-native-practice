@@ -2,8 +2,8 @@
   "background_color": "#ffffff",
   "display": "standalone",
   "lang": "en",
-  "name": "standard-rn",
-  "short_name": "standard-rn",
+  "name": "react-native-practice",
+  "short_name": "react-native-practice",
   "start_url": "/?utm_source=web_app_manifest",
   "orientation": "portrait",
   "icons": [
