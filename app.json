@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "standard-rn",
+    "slug": "standard-rn",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./packages/core/assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./packages/core/assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./packages/core/assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./packages/core/assets/images/favicon.png"
+    }
+  }
+}
