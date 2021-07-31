@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "name": "standard-rn",
+  "name": "react-native-practice",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
@@ -10,8 +10,7 @@
     "desktop": "expo-electron start",
     "eject": "expo eject",
     "test": "jest --watchAll",
-    "github": "gh-pages -d web-build",
-    "pregithub": "expo build:web  && copyfiles --flat 404.html web-build",
+    "github": "node github-pages.js",
     "desktop:mac": "electron-webpack && electron-builder --dir -c.compression=store -c.mac.identity=null",
     "desktop:windows": ".\\node_modules\\.bin\\electron-webpack.cmd && electron-builder --dir -c.compression=store",
     "mac": "electron-webpack && electron-builder --mac -c.compression=store",
@@ -55,19 +54,20 @@
     "@types/lodash": "^4.14.170",
     "@types/react": "~16.9.35",
     "@types/react-native": "~0.63.2",
+    "cross-env": "^7.0.3",
     "electron": "^9.4.0",
     "electron-builder": "^22.11.7",
     "jest-expo": "~41.0.0",
     "typescript": "~4.0.0"
   },
   "build": {
-    "appId": "com.electron.standard-rn",
+    "appId": "com.electron.react-native-practice",
     "mac": {
       "target": "default",
       "category": "public.app-category.business"
     },
     "dmg": {
-      "title": "standard-rn"
+      "title": "react-native-practice"
     },
     "win": {
       "target": [

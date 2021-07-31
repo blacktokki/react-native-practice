@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "standard-rn",
-    "slug": "standard-rn",
+    "name": "react-native-practice",
+    "slug": "react-native-practice",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./packages/core/assets/images/icon.png",
