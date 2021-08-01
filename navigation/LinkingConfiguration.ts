@@ -6,7 +6,7 @@
 
 import { PathConfigMap } from '@react-navigation/core';
 import * as Linking from 'expo-linking';
-import Config from './Config'
+import Config from '../etc/config'
 
 const screens = Config.packages.reduce((previousValue, currentValue)=>{
   const Package = require('../packages/'+ currentValue +'/screens')

@@ -12,7 +12,7 @@ import { Button } from 'react-native';
 import Colors from '../packages/core/constants/Colors';
 import useColorScheme from '../packages/core/hooks/useColorScheme';
 import { DrawerParamList } from '../types'
-import Config from './Config'
+import Config from '../etc/config'
 
 const Drawer = createDrawerNavigator<typeof DrawerParamList>();
 const Navigators = Config.packages.reduce((previousValue, currentValue)=>{

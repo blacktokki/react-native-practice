@@ -3,6 +3,7 @@
   "name": "react-native-practice",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
+    "link": "node etc/link.js",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -10,7 +11,7 @@
     "desktop": "expo-electron start",
     "eject": "expo eject",
     "test": "jest --watchAll",
-    "github": "node github-pages.js",
+    "github": "node etc/github-pages.js",
     "desktop:mac": "electron-webpack && electron-builder --dir -c.compression=store -c.mac.identity=null",
     "desktop:windows": ".\\node_modules\\.bin\\electron-webpack.cmd && electron-builder --dir -c.compression=store",
     "mac": "electron-webpack && electron-builder --mac -c.compression=store",
