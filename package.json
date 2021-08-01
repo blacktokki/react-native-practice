@@ -3,7 +3,7 @@
   "name": "react-native-practice",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "link": "node etc/link.js",
+    "postinstall": "node etc/link.js",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -46,7 +46,8 @@
     "react-native-safe-area-context": "3.2.0",
     "react-native-screens": "~3.0.0",
     "react-native-web": "^0.17.1",
-    "react-sortable-hoc": "^2.0.0"
+    "react-sortable-hoc": "^2.0.0",
+    "symlink-dir": "^5.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

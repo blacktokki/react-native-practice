@@ -4,7 +4,7 @@ const Constants = {
     packages: ['core'],
     rootPath: '/react-native-practice',  //github repository name
     link: {
-        '.link/screens/NotFoundScreen': 'core/screens/NotFoundScreen'
+        '.not-found': 'not-found'
     },
 }
 try {
