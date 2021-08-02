@@ -1,6 +1,6 @@
 import React, {useCallback} from 'react';
 import { StackScreenProps } from '@react-navigation/stack';
-import { DrawerParamList} from '../../../types';
+import { DrawerParamList } from '@react-native-practice/core/types';
 import { StyleSheet, Text, NativeSyntheticEvent, NativeScrollEvent} from 'react-native';
 //import DraggableFlatListDummy from '../components/DraggableFlatListDummy'
 import SectionDummy from '../components/SectionDummy'

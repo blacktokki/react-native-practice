@@ -1,4 +1,3 @@
-import { toNumber } from 'lodash';
 import React, { Component } from 'react';
 import { Platform, StyleSheet, View, ScrollView, Animated, GestureResponderEvent, StyleProp, ViewStyle, LayoutChangeEvent } from 'react-native';
 

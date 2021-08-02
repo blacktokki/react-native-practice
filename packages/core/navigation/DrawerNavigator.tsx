@@ -9,14 +9,15 @@ import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
 import { Button } from 'react-native';
 
-import Colors from '../packages/core/constants/Colors';
-import useColorScheme from '../packages/core/hooks/useColorScheme';
+import Colors from '../constants/Colors';
+import useColorScheme from '../hooks/useColorScheme';
 import { DrawerParamList } from '../types'
-import Config from '../etc/config'
+import Config from './Config'
 
 const Drawer = createDrawerNavigator<typeof DrawerParamList>();
 const Navigators = Config.packages.reduce((previousValue, currentValue)=>{
-  const Package = require('../packages/'+ currentValue +'/screens')
+  console.log(currentValue)
+  //const Package = require(currentValue)
   return previousValue.concat(Object.keys(Package.default).map((value)=>DrawerNavigatorGeneric(value, Package.default[value].component, Package.default[value].title)))
 } , [] as JSX.Element[])
 

@@ -6,10 +6,11 @@
 
 import { PathConfigMap } from '@react-navigation/core';
 import * as Linking from 'expo-linking';
-import Config from '../etc/config';
+import Config from './Config';
 
 const screens = Config.packages.reduce((previousValue, currentValue)=>{
-  const Package = require('../packages/'+ currentValue +'/screens')
+  console.log(currentValue)
+  //const Package = require(currentValue)
   Object.keys(Package.default).reduce((_previousValue, _currentValue)=>{
     const _screens:PathConfigMap = {}
     _screens[_currentValue] = Package.default[_currentValue].url

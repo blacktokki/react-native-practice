@@ -4,11 +4,11 @@
     "slug": "react-native-practice",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./packages/core/assets/images/icon.png",
+    "icon": "node_modules/@react-native-practice/core/assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./packages/core/assets/images/splash.png",
+      "image": "node_modules/@react-native-practice/core/assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -23,12 +23,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./packages/core/assets/images/adaptive-icon.png",
+        "foregroundImage": "node_modules/@react-native-practice/core/assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
-      "favicon": "./packages/core/assets/images/favicon.png"
+      "favicon": "node_modules/@react-native-practice/core/assets/images/favicon.png"
     }
   }
 }

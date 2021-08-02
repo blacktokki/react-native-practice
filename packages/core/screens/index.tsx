@@ -1,20 +1,7 @@
-import TabOneScreen from './TabOneScreen'
-import TabTwoScreen from './TabTwoScreen'
-import TabThreeScreen from './TabThreeScreen'
+import NotFoundScreen from './NotFoundScreen'
 export default {
-    TabOneScreen:{
-        component: TabOneScreen,
-        title: 'Tab One Title',
-        url: 'one'
+    NotFoundScreen:{
+        component: NotFoundScreen,
+        title: 'Oops!',
     },
-    TabTwoScreen:{
-        component: TabTwoScreen,
-        title: 'Tab Two Title',
-        url: 'two'
-    },
-    TabThreeScreen:{
-        component: TabThreeScreen,
-        title: 'Tab Three Title',
-        url: 'three'
-    }
 }
