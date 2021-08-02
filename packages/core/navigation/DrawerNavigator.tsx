@@ -16,9 +16,7 @@ import Config from './Config'
 
 const Drawer = createDrawerNavigator<typeof DrawerParamList>();
 const Navigators = Config.packages.reduce((previousValue, currentValue)=>{
-  console.log(currentValue)
-  //const Package = require(currentValue)
-  return previousValue.concat(Object.keys(Package.default).map((value)=>DrawerNavigatorGeneric(value, Package.default[value].component, Package.default[value].title)))
+  return previousValue.concat(Object.keys(currentValue).map((value)=>DrawerNavigatorGeneric(value, currentValue[value].component, currentValue[value].title)))
 } , [] as JSX.Element[])
 
 export default function DrawerNavigator() {

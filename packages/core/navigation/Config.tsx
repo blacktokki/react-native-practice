@@ -1,7 +1,12 @@
-console.log(require.main)
+import { ComponentType } from "react"
+
 const Constants:{
     initialRouteName?:string,
-    packages: string[],
+    packages: Record<string, {
+        component: ComponentType<any>,
+        title: string,
+        url: string
+    }>[],
     notFoundScreen:string,
     rootPath: string,  //github repository name,
 } = {

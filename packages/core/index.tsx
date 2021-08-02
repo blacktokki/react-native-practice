@@ -1,6 +1,7 @@
 export { default as useCachedResources } from './hooks/useCachedResources';
 export { default as useColorScheme } from './hooks/useColorScheme';
 export { default as Navigation } from './navigation';
+export { default as Config } from './navigation/Config';
 import _ from 'lodash';
 
 if (process.versions && process.versions['electron']){

@@ -15,8 +15,6 @@
     "expo-linking": "^2.3.1",
     "expo-splash-screen": "^0.11.2",
     "lodash": "^4.17.21",
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
     "react-native": "https://github.com/expo/react-native/archive/sdk-41.0.0.tar.gz",
     "@react-navigation/drawer": "^5.12.5",
     "@react-navigation/native": "~5.8.10",
@@ -28,10 +26,13 @@
     "react-native-web": "^0.17.1"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.171",
-    "@types/node": "^16.4.10",
+    "@types/lodash": "^4.14.170",
     "@types/react": "~16.9.35",
     "@types/react-native": "~0.63.2",
     "typescript": "~4.0.0"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*"
   }
 }

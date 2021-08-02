@@ -9,11 +9,9 @@ import * as Linking from 'expo-linking';
 import Config from './Config';
 
 const screens = Config.packages.reduce((previousValue, currentValue)=>{
-  console.log(currentValue)
-  //const Package = require(currentValue)
-  Object.keys(Package.default).reduce((_previousValue, _currentValue)=>{
+  Object.keys(currentValue).reduce((_previousValue, _currentValue)=>{
     const _screens:PathConfigMap = {}
-    _screens[_currentValue] = Package.default[_currentValue].url
+    _screens[_currentValue] = currentValue[_currentValue].url
     _previousValue[_currentValue.substring(0, _currentValue.lastIndexOf("Screen"))] = { screens:_screens}
     return _previousValue
   }, previousValue)

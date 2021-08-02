@@ -1,7 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { initRender, useCachedResources, useColorScheme, Navigation } from '@react-native-practice/core';
+import { initRender, Navigation } from '@react-native-practice/core';
+import useCachedResources from './hooks/useCachedResources';
+import useColorScheme from './hooks/useColorScheme';
 import _ from 'lodash';
 
 
