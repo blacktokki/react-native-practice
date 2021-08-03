@@ -4,7 +4,7 @@
   "main": "node_modules/expo/AppEntry.js",
   "homepage": "http://blacktokki.github.io/react-native-practice",
   "scripts": {
-    "aaa": "gh-pages --help",
+    "link": "npm link ../core && npm link ../default",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -25,7 +25,6 @@
   "dependencies": {
     "@expo/vector-icons": "^12.0.0",
     "@react-native-community/masked-view": "0.1.10",
-    "@react-native-practice/core": "file:../core",
     "copyfiles": "^2.4.1",
     "expo": "~41.0.1",
     "expo-asset": "~8.3.1",

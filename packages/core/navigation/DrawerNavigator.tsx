@@ -11,13 +11,14 @@ import { Button } from 'react-native';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
-import { DrawerParamList } from '../types'
+import { DrawerParamList, ScreenPackage } from '../types'
 import Config from './Config'
 
 const Drawer = createDrawerNavigator<typeof DrawerParamList>();
-const Navigators = Config.packages.reduce((previousValue, currentValue)=>{
-  return previousValue.concat(Object.keys(currentValue).map((value)=>DrawerNavigatorGeneric(value, currentValue[value].component, currentValue[value].title)))
-} , [] as JSX.Element[])
+const Navigators:JSX.Element[] = []
+export function pushNavigators(currentValue:ScreenPackage){
+  Navigators.concat(Object.keys(currentValue).reduce((prev, value)=>{prev.push(DrawerNavigatorGeneric(value, currentValue[value].component, currentValue[value].title)); return prev}, Navigators))
+}
 
 export default function DrawerNavigator() {
   const colorScheme = useColorScheme();

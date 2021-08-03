@@ -1,8 +1,9 @@
 export { default as useCachedResources } from './hooks/useCachedResources';
 export { default as useColorScheme } from './hooks/useColorScheme';
 export { default as Navigation } from './navigation';
-export { default as Config } from './navigation/Config';
 import _ from 'lodash';
+import { pushNavigators, pushScreens } from './navigation'
+import { ScreenPackage } from './types'
 
 if (process.versions && process.versions['electron']){
     (function() {  // for electron
@@ -50,6 +51,10 @@ if (process.versions && process.versions['electron']){
             // console.log(message)
         }
     };
+export function pushScreenModule(screens:ScreenPackage){
+    pushNavigators(screens)
+    pushScreens(screens)
+}
 
 export function initRender(){
     if (process.versions && process.versions['electron']){  // for electron

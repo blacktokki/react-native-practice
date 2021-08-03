@@ -7,5 +7,10 @@ export type RootStackParamList = {
   Root: undefined;
   NotFound: undefined;
 };
+export type ScreenPackage = Record<string, {
+  component: React.ComponentType<any>,
+  title: string,
+  url: string
+}>
 
 export const DrawerParamList:Record<string, object | undefined> = {}

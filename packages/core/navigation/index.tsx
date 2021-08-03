@@ -3,6 +3,9 @@
  * https://reactnavigation.org/docs/getting-started
  *
  */
+
+export { pushNavigators } from './DrawerNavigator';
+export { pushScreens } from './LinkingConfiguration'
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
@@ -12,8 +15,6 @@ import { RootStackParamList } from '../types';
 import DrawerNavigator from './DrawerNavigator';
 import LinkingConfiguration from './LinkingConfiguration';
 import Config from './Config'
-
-const screens = require('../screens') //Config.notFoundScreen
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -33,7 +34,7 @@ function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Root" component={DrawerNavigator} />
-      <Stack.Screen name="NotFound" component={screens.NotFoundScreen.component} options={{ title: screens.NotFoundScreen.title }} />
+      <Stack.Screen name="NotFound" component={Config.notFoundScreen.component} options={{ title: Config.notFoundScreen.title }} />
     </Stack.Navigator>
   );
 }
