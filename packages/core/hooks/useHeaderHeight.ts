@@ -1,1 +1,0 @@
-export { useHeaderHeight as default } from '@react-navigation/stack';

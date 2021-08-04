@@ -1,8 +1,7 @@
 
 import React from "react";
 import {TouchableOpacity, Text, Dimensions } from "react-native";
-//import { useHeaderHeight } from '@react-navigation/stack';
-import Hooks from '../hooks';
+import { useHeaderHeight } from '@react-navigation/stack';
 import DraggableFlatList, {RenderItemParams} from './DraggableFlatList'
 const NUM_ITEMS = 10;
 
@@ -52,7 +51,7 @@ type Item = {
 };
 
 export default function DraggableFlatListDummy(){
-    const headerHeight = Hooks['useHeaderHeight']();
+    const headerHeight = useHeaderHeight();
     return (<DraggableFlatList<Item>
         height={Dimensions.get("window").height - headerHeight}
         data={exampleData}

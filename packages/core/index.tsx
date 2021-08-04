@@ -1,6 +1,6 @@
-export { default as useCachedResources } from './hooks/useCachedResources';
 export { default as useColorScheme } from './hooks/useColorScheme';
 export { default as Navigation } from './navigation';
+export { default as Config } from './navigation/Config';
 import _ from 'lodash';
 import { pushNavigators, pushScreens } from './navigation'
 import { ScreenPackage } from './types'

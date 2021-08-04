@@ -1,8 +1,7 @@
 
 import React from "react";
 import { View, TouchableOpacity, Dimensions, Platform, StyleProp, ViewStyle, Animated, NativeSyntheticEvent, NativeScrollEvent  } from "react-native";
-//import { useHeaderHeight } from '@react-navigation/stack';
-import Hooks from '../hooks';
+import { useHeaderHeight } from '@react-navigation/stack';
 import DraggableAccordion, { RenderItemParams, CommandSetterParams as _CommandSetterParams } from './DraggableAccordion'
 export type CommandSetterParams = _CommandSetterParams<DraggableSection>
 
@@ -72,7 +71,7 @@ type DraggableSection = {
 
 
 export default function DraggableFlatListMain(props:Props){
-    const headerHeight = Hooks['useHeaderHeight']();
+    const headerHeight = useHeaderHeight();
     const _data =  React.Children.toArray(props.children).map((value, index)=>({header:props.header[index] || (<View></View>), body:value}))
     const _sortEnabled = (props.sortEnabled === undefined ? true : props.sortEnabled)
     const _renderItem = _sortEnabled ? renderItemSort : renderItemUnsort

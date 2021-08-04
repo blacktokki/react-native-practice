@@ -2,13 +2,15 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import _ from 'lodash';
-import _default from '@react-native-practice/default';
-import default_hooks from '@react-native-practice/default/hooks'; 
-import useHeaderHeight from '@react-native-practice/core/hooks/useHeaderHeight';
-import { initRender, Navigation, useCachedResources, useColorScheme, pushScreenModule } from '@react-native-practice/core';
+import { initRender, Navigation, useColorScheme, pushScreenModule } from '@react-native-practice/core';
+import useCachedResources from './useCachedResources';
 
-default_hooks['useHeaderHeight'] = useHeaderHeight
+import _default from '@react-native-practice/default/screens';
+import marble from '@react-native-practice/marble/screens';
+
 pushScreenModule(_default)
+pushScreenModule(marble)
+
 
 export default function App() {
   const isLoadingComplete = useCachedResources();

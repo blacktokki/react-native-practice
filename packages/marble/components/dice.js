@@ -85,9 +85,10 @@ export default class Cube extends Component {
   }
 
   renderLeft(color) {
+    const image = require('@react-native-practice/core/assets/images/favicon.png')
     return (
       <ImageBackground
-        source={require('../../core/assets/images/favicon.png')}
+        source={image.default || image}
         ref={component => this.refViewRight = component}
         style={[styles.rectangle, (color) ? {backgroundColor: color} : null]}
         {...this.panResponder.panHandlers}

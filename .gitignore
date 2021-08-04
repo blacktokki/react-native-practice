@@ -8,8 +8,8 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
+packages/*/node_modules/
 packages/index.*
-packages/.*
 packages.*
 
 # macOS
