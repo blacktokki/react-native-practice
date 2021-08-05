@@ -4,7 +4,7 @@
   "main": "node_modules/expo/AppEntry.js",
   "homepage": "http://blacktokki.github.io/react-native-practice",
   "scripts": {
-    "link": "npm link packages/core && npm link packages/default && npm link packages/marble",
+    "link": "npm link packages/*",
     "postinstall": "npm run link",
     "start": "expo start",
     "android": "expo start --android",
