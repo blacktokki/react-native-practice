@@ -3,8 +3,8 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { DrawerParamList } from '@react-native-practice/core/types';
 import { StyleSheet, Text} from 'react-native';
 //import DraggableFlatListDummy from '../components/DraggableFlatListDummy'
-import SectionDummy from '../components/SectionDummy'
-import DraggableFlatListMain from '../components/DraggableFlatListMain'
+import SectionDummy from '@react-native-practice/core/components/SectionDummy'
+import DraggableFlatListMain from '@react-native-practice/core/components/DraggableFlatListMain'
 
 export default function TabTwoScreen({
   navigation

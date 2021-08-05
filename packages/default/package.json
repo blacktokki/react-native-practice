@@ -8,10 +8,7 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "react-native-draggable-flatlist": "^2.6.2",
-    "react-sortable-hoc": "^2.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/react": "~16.9.35",
     "@types/react-native": "~0.63.2",

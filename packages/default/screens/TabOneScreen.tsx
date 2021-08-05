@@ -2,8 +2,8 @@ import React, {useCallback, useRef} from 'react';
 import { StackScreenProps } from '@react-navigation/stack';
 import { DrawerParamList } from '@react-native-practice/core/types';
 import { StyleSheet, Text, Button} from 'react-native';
-import DraggableFlatListMain, {CommandSetterParams} from '../components/DraggableFlatListMain'
-import SectionDummy from '../components/SectionDummy'
+import DraggableFlatListMain, {CommandSetterParams} from '@react-native-practice/core/components/DraggableFlatListMain'
+import SectionDummy from '@react-native-practice/core/components/SectionDummy'
 
 
 export default function TabOneScreen({

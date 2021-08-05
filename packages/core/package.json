@@ -10,7 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "expo-linking": "^2.3.1",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "react-native-draggable-flatlist": "^2.6.2",
+    "react-sortable-hoc": "^2.0.0"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.170",
