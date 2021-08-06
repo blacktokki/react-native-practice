@@ -25,7 +25,8 @@ interface PanelState{
     expanded: boolean
     maxHeight: number | null,
     style:any,
-    onCloseCallback: ()=>void
+    onCloseCallback: ()=>void,
+    heightLock: boolean
 }
 
 export class Accordion_Panel<T> extends Component<PanelProp<T>, PanelState> {
@@ -35,10 +36,12 @@ export class Accordion_Panel<T> extends Component<PanelProp<T>, PanelState> {
     style: {
         overflow: 'hidden'
     },
-    onCloseCallback:()=>{}
+    onCloseCallback:()=>{},
+    heightLock: true
   }
   mount:boolean = false
   useCloseCallback = false
+  lastHeight?:number = undefined
 
   setExpand(value:boolean){
     //console.log('num', this.props.numnum, 'mount', this.mount, 'will-expended', value, this.state)
@@ -81,14 +84,18 @@ export class Accordion_Panel<T> extends Component<PanelProp<T>, PanelState> {
           toValue: this.state.maxHeight,
           duration: this.props.expandSpeed,
           useNativeDriver:false,
-        }).start();
+        }).start(()=>this.setState({heightLock:false}));
       }
-      else if (!this.state.expanded && this.state.style.height._value == this.state.maxHeight){
-        Animated.timing(this.state.style.height, {
-          toValue: 0,
-          duration: this.props.expandSpeed,
-          useNativeDriver:false,
-        }).start();
+      else if (!this.state.expanded && this.state.style.height._value == this.state.maxHeight && this.state.heightLock == false){
+        let lastHeight = this.lastHeight || this.state.maxHeight
+        this.setState({heightLock:true, maxHeight:lastHeight})
+        Animated.timing(this.state.style.height, {toValue:lastHeight, duration:0, useNativeDriver:false}).start(()=>
+          Animated.timing(this.state.style.height, {
+            toValue: 0,
+            duration: this.props.expandSpeed,
+            useNativeDriver:false,
+          }).start()
+        )
       }
     }
     else if(this.state.maxHeight !== null){
@@ -117,7 +124,7 @@ export class Accordion_Panel<T> extends Component<PanelProp<T>, PanelState> {
       item:this.props.item,
       holderStyle:holderStyle,
       buttonOnPress:this.onPress.bind(this),
-      contentStyle:this.state.style,
+      contentStyle:[this.state.style, this.state.heightLock?{}:{height:undefined}],
       contentOnLayout:((event:LayoutChangeEvent) => {
         var {x, y, width, height} = event.nativeEvent.layout;
         if (this.state.maxHeight == null){
@@ -126,6 +133,7 @@ export class Accordion_Panel<T> extends Component<PanelProp<T>, PanelState> {
             maxHeight: height
           })
         }
+        this.lastHeight = height
       }).bind(this),
       onClose:this.onClose.bind(this),
     })
