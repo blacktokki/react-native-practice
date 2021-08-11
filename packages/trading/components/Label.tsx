@@ -13,7 +13,6 @@ import Animated, {
   sub
 } from "react-native-reanimated";
 import  "react-native-reanimated/src/reanimated1/derived"
-//import { ReText } from "react-native-redash";
 
 const styles = StyleSheet.create({
   container: {

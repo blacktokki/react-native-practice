@@ -20,6 +20,7 @@ export function load_stocklist_json(){
         var j = load_json(_path)
     else
         var j = request_company_list() as any
+        console.log(j)
         save_json(j, _path)
     //filtering stock!
     return ((j as any)['block1'] as any[]).filter((d) =>

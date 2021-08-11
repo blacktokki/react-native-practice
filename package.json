@@ -4,8 +4,11 @@
   "main": "node_modules/expo/AppEntry.js",
   "homepage": "http://blacktokki.github.io/react-native-practice",
   "scripts": {
-    "link": "npm link packages/*",
-    "postinstall": "npm run link",
+    "link:core": "npm link packages/core",
+    "link:default": "npm link packages/default",
+    "link:marble": "npm link packages/marble",
+    "link:trading": "npm link packages/trading",
+    "postinstall": "concurrently 'npm:link:*'",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -53,13 +56,14 @@
     "@types/lodash": "^4.14.170",
     "@types/react": "~16.9.35",
     "@types/react-native": "~0.63.2",
+    "concurrently": "^6.2.1",
+    "copyfiles": "^2.4.1",
     "electron": "^9.4.0",
     "electron-builder": "^22.11.7",
+    "gh-pages": "^3.2.2",
     "jest-expo": "~41.0.0",
     "npm-link-shared": "^0.5.6",
-    "typescript": "~4.0.0",
-    "copyfiles": "^2.4.1",
-    "gh-pages": "^3.2.2"
+    "typescript": "~4.0.0"
   },
   "build": {
     "appId": "com.electron.react-native-practice",

@@ -1,6 +1,16 @@
 import requests from 'axios'
-
+//import electron from 'electron'
 const headers = {'User-Agent': 'Chrome/78.0.3904.87 Safari/537.36',}
+
+// const filter:electron.Filter = {
+//     urls: ['http://data.krx.co.kr/*']
+//   };
+// const session = electron.remote.session
+// session.defaultSession.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
+//     details.requestHeaders['Origin'] = null;
+//     details.headers['Origin'] = null;
+//     callback({ requestHeaders: details.requestHeaders })
+// });
 
 
 export async function request_company_list(){

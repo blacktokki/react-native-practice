@@ -14,7 +14,6 @@
     "d3-scale": "^4.0.0",
     "mathjs": "^9.4.4",
     "moment": "^2.29.1",
-    "react-native-redash": "16.1.1",
     "react-native-svg": "^12.1.1"
   },
   "devDependencies": {
