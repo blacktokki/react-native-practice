@@ -1,32 +1,33 @@
 import requests from 'axios'
-//import electron from 'electron'
-const headers = {'User-Agent': 'Chrome/78.0.3904.87 Safari/537.36',}
 
-// const filter:electron.Filter = {
-//     urls: ['http://data.krx.co.kr/*']
-//   };
-// const session = electron.remote.session
-// session.defaultSession.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
-//     details.requestHeaders['Origin'] = null;
-//     details.headers['Origin'] = null;
-//     callback({ requestHeaders: details.requestHeaders })
-// });
-
+export const simpleModelKeys = ['TRD_DD', 'TDD_CLSPRC', 'TDD_OPNPRC', 'TDD_HGPRC', 'TDD_LWPRC', 'ACC_TRDVOL', 'ACC_TRDVAL', 'FLUC_RT'] 
 
 export async function request_company_list(){
-    return (await requests.post('http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd', {'bld': 'dbms/comm/finder/finder_stkisu',})).data
+    const params = new URLSearchParams();
+    params.append('bld', 'dbms/comm/finder/finder_stkisu');
+    return (await requests.post('http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd', params)).data
 }
 
-export async function request_company(full_code:string, options:{start_date:Date, end_date:Date}={start_date:new Date(1990,1,1), end_date:new Date(2100,1,1)}){
+function dd_format(date:Date){
+    return date.getFullYear().toString() + (date.getMonth() + 1).toString().padStart(2,'0') + date.getDate().toString().padStart(2,'0')
+}
+
+export async function request_company(full_code:string, isSimple:number, options:{start_date:Date, end_date:Date}={start_date:new Date(1990,1,1), end_date:new Date(2100,1,1)}){
+    const params = new URLSearchParams();
     let data = {
         'bld': 'dbms/MDC/STAT/issue/MDCSTAT23902',
         'isuCd': full_code,
         'isuCd2': '',
-        'strtDd': options.start_date.getFullYear()+options.start_date.getDate(),
-        'endDd': options.end_date.getFullYear()+options.end_date.getDate(),
+        'strtDd': dd_format(options.start_date),
+        'endDd': dd_format(options.end_date),
         'share': '1',
         'money': '1',
         'csvxls_isNo': 'false',
     }
-    return (await requests.post('http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd', data, {headers:headers})).data
+    Object.keys(data).map(key=>params.append(key, (data as any)[key]))
+    const _data = (await requests.post('http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd', params)).data
+    if (isSimple){
+        _data['output'] = _data['output'].map((item)=>{return simpleModelKeys.reduce((prev, current)=>{prev.push(item[current]); return prev},[])})
+    }
+    return _data
 }

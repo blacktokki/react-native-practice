@@ -1,6 +1,6 @@
 'use strict';
 
-import { app, BrowserWindow, session } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
 import { format as formatUrl } from 'url';
 
@@ -11,7 +11,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 let mainWindow;
 
 function createMainWindow() {
-  const browserWindow = new BrowserWindow({ webPreferences: { nodeIntegration: true } });
+  const browserWindow = new BrowserWindow({ webPreferences: { nodeIntegration: true, webSecurity: false } });
 
   if (isDevelopment) {
     browserWindow.webContents.openDevTools();
@@ -60,22 +60,6 @@ app.on('activate', () => {
 // create main BrowserWindow when electron is ready
 app.on('ready', () => {
   mainWindow = createMainWindow();
-  const filter = {
-    urls: ['http://data.krx.co.kr/*']
-  };
-  session.defaultSession.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
-    details.requestHeaders['Origin'] = 'http://data.krx.co.kr';
-    callback({ requestHeaders: details.requestHeaders })
-  });
-  session.defaultSession.webRequest.onHeadersReceived(
-    filter,
-    (details, callback) => {
-      console.log(details);
-      details.responseHeaders['Access-Control-Allow-Origin'] = [
-        '*'
-      ];
-      callback({ responseHeaders: details.responseHeaders });
-    }
-  );
-
 });
+
+app.disableHardwareAcceleration();
