@@ -1,3 +1,5 @@
+export type DailyCompressModel = [string, string, string, string, string, string, string ,string]
+
 export type DailySimpleModel = {
     'TRD_DD': string,  // Date, 날짜
     'TDD_CLSPRC': string, //Close, 종가
@@ -18,3 +20,16 @@ export type DailyFullModel = DailySimpleModel & {
     'CMPPRVDD_PRC': string, //Change, 대비 
     'MKTCAP': string, //MarCap, 시가총액
 }
+
+export type CompanyCompress = {
+    '_status':number,
+    'output':  DailyCompressModel[],
+    'CURRENT_DATETIME':string
+}
+
+export type CompanyResponse = {
+    '_status':number,
+    'output': (DailySimpleModel | DailyFullModel)[],
+    'CURRENT_DATETIME':string
+}
+

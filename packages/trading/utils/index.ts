@@ -1,8 +1,9 @@
 import path from 'path'
 import moment from 'moment'
 import {load_json, save_json, exists_file, init_folder} from './jsonio'
-import {request_company, request_company_list, simpleModelKeys } from './requestutil'
-import { DailySimpleModel, DailyFullModel } from '../types'
+import {request_company, request_company_list } from './requestutil'
+import { CompanyResponse } from '../types'
+import { compressModel, decompressModel } from './compress'
 
 export const INDEX_STOCK = ['ARIRANG', 'HANARO', 'KBSTAR', 'KINDEX', 'KODEX', 'TIGER', 'KOSEF', 'SMART', 'TREX']
 export const FILE_SPLIT = 10
@@ -29,11 +30,6 @@ export async function load_stocklist_json(){
     }   )
 }
 
-export type Jdata = {
-    '_status':number,
-    'output': (DailySimpleModel | DailyFullModel)[],
-    'CURRENT_DATETIME':string
-}
 const default_date = {
     start_date:new Date(2016, 0, 1), 
     end_date:moment(new Date()).set({h: 0, m: 0, s:0}).toDate()
@@ -46,38 +42,42 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
     init_folder('data')
     init_folder(path.join('data', folder))
     let success = true;
-    let j2:Jdata
+    let j2:CompanyResponse
     try{
         j2 = load_json(_path)
+        decompressModel(options.isSimple, j2)
     }catch(e){
         success = false;
-        j2 = await request_company(full_code, options.isSimple, default_date) as any
+        j2 = await request_company(full_code, default_date)
+        compressModel(options.isSimple, j2)
         save_json(j2, _path)
         j2['_status'] = 0
+        await sleep(200)
     }
     if (success){
         let output_len = (j2['output'] as any[]).length
-        let date = moment(new Date(j2['output'][0]['TRD_DD'])).add('second', 1).toDate()
+        let date = moment(new Date(j2['output'][0]['TRD_DD'])).add(1, 'second').toDate()
         let last_date = output_len ? date : moment(options.start_date).add(1, 'day').toDate()
         if (options.log_datetime)
             console.log(options.start_date, last_date, options.end_date)
         if  (output_len == 0){
-            j2 = await request_company(full_code, options.isSimple, default_date) as any
+            j2 = await request_company(full_code, default_date) as any
+            compressModel(options.isSimple, j2)
             save_json(j2, _path)
             j2['_status'] = 2
+            await sleep(200)
         }
         else if (options.start_date < last_date && last_date < options.end_date){
-            let j3:Jdata = await request_company(full_code, options.isSimple, {start_date:last_date, end_date:options.end_date}) as any
+            let j3:CompanyResponse = await request_company(full_code, {start_date:last_date, end_date:options.end_date})
             j2['output'] = j3['output'].concat(j2['output'].slice(1))
             j2['CURRENT_DATETIME'] = j3['CURRENT_DATETIME']
+            compressModel(options.isSimple, j2)
             save_json(j2, _path)
             j2['_status'] = 3
+            await sleep(200)
         }
         else
             j2['_status'] = 1
-    }
-    if(options.isSimple){
-        j2['output'] = j2['output'].map((item)=>{return simpleModelKeys.reduce((prev, current, index)=>{prev[current] = item[index]; return prev}, {} as DailySimpleModel)})
     }
     return j2
 }
