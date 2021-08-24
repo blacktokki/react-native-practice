@@ -6,13 +6,11 @@ import SectionDummy from '@react-native-practice/core/components/SectionDummy'
 import SliderSection from '../components/SliderSection'
 import DraggableFlatListMain from '@react-native-practice/core/components/DraggableFlatListMain'
 import { cdf, laplace_cdf } from '../utils/mathutil'
-import load_normal from '../commands/load_normal';
 import CoinBasePro from  '../components/CoinBasePro'
-import { Touchable } from 'react-native';
 
 export default function TabMainScreen({
   navigation
-}: StackScreenProps<typeof DrawerParamList, 'TabTwo'>) {
+}: StackScreenProps<typeof DrawerParamList, 'TabMain'>) {
   return (
     <DraggableFlatListMain
       header={[
@@ -28,12 +26,7 @@ export default function TabMainScreen({
     >
       <SliderSection renderText={(text)=>{return cdf(parseFloat(text) || 0.0).toString()}}/>
       <SliderSection renderText={(text)=>{return laplace_cdf(parseFloat(text) || 0.0).toString()}}/>
-      <CoinBasePro/>
-      <View>
-        <TouchableOpacity onPress={(e)=>{load_normal(undefined,undefined, undefined, undefined, 1)}}>
-          <Text> execute</Text>  
-        </TouchableOpacity>        
-      </View>
+      <CoinBasePro data={require('../components/dummydata.json')} slice={[0, 20]}/>
       <SectionDummy
           title='Tab Two'
           pressText1='Go 1 screen!'

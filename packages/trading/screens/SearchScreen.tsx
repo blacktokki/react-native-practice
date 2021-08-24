@@ -2,7 +2,7 @@ import * as React from 'react';
 import moment from 'moment'
 import { StackScreenProps } from '@react-navigation/stack';
 import { DrawerParamList } from '@react-native-practice/core/types';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native';
+import { StyleSheet, TouchableOpacity ,Text, View, FlatList, TextInput, Button } from 'react-native';
 import {load_stocklist_json, load_stock_json, sleep} from '../utils';
 import { CompanyResponse } from '../types';
 
@@ -57,13 +57,32 @@ async function load_stock(data_all:any[], setter:any, show_log:number){
   }
 }
 
-export default function TabMainScreen({
+function Separator(){
+  return <View style={{
+    backgroundColor: '#000',
+    marginVertical: 30,
+    height: 1
+  }}/>
+}
+
+export default function TabSearchScreen({
   navigation
-}: StackScreenProps<typeof DrawerParamList, 'TabTwo'>) {
+}: StackScreenProps<typeof DrawerParamList, 'TabSearch'>) {
   const [data, setData] = React.useState<any[]>([])
-  
+  const [dataSearch, setDataSearch] = React.useState<any[]>([])
+  const [keyword, setKeyword] = React.useState('')
+  const syncLength = React.useMemo(()=>[data.filter((item)=>item.checked).length, data.length], [data])
+  const searchRef = React.useRef<NodeJS.Timeout>()
   const renderItem = React.useCallback(({item})=>{return (
-    <View><Text>{item.full_code}:{item.checked !== undefined? item.checked.toString():'false'}</Text></View>
+    <View style={{flexDirection: 'row'}}>
+      <TouchableOpacity onPress={()=>{navigation.navigate("Detail", {
+        screen: 'DetailScreen',
+        params: {full_code: item.full_code}
+      })}}>
+        <Text>{item.short_code}:{item.codeName} </Text>
+      </TouchableOpacity>
+      <Text style={{color: item.checked !== undefined?(item.checked?'green':'red'): 'orange'}}>◉</Text>
+    </View>
   )},[])
   React.useEffect(()=>{
     console.log('reload finished')
@@ -80,13 +99,22 @@ export default function TabMainScreen({
       //setData([{full_code:11111},{full_code:11112},{full_code:11113},{full_code:11114},{full_code:11115}])
     }
   },[data])
+  const onChangeText = React.useCallback((value)=>{
+    setKeyword(value)
+    if (searchRef.current)
+      clearTimeout(searchRef.current)
+    searchRef.current = setTimeout(() => {
+      setDataSearch(value != ''?data.filter((item)=>{return (item.short_code as string).indexOf(value) > -1 || (item.codeName as string).indexOf(value) > -1}):[])
+    }, 200);
+  }, [data])
   return (
     <View>
-      <TouchableOpacity onPress={()=>load_stock(data, setData, 1)}>
-        <Text>Sync!</Text>
-      </TouchableOpacity>
+      <TextInput style={{borderColor:'#000', borderWidth: 1, marginVertical: 30}} onChangeText={onChangeText} value={keyword}></TextInput>
+      <Button title={"Sync!"} onPress={()=>load_stock(data, setData, 1)}/>
+      <Text>({syncLength[0]}/{syncLength[1]})</Text>
+      <Separator/>
       <FlatList
-        data={data}
+        data={dataSearch}
         renderItem={renderItem}
         keyExtractor={item => (item as any).full_code}
       />

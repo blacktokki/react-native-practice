@@ -17,9 +17,9 @@ import Label from "./Label";
 import { Candle } from "./Candle";
 import { useRef } from "react";
 import { useCallback } from "react";
+import { lowerCase } from "lodash";
 
-const data = require('./dummydata.json')
-const candles = data.slice(0, 20);
+
 const marginVertical = HEIGHT/16
 const styles = StyleSheet.create({
   container: {
@@ -28,13 +28,9 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
   },
 });
-const getDomain = (rows: Candle[]): [number, number] => {
-  const values = rows.reduce((prev, { high, low }) => {prev.push(high);prev.push(low);return prev}, [] as number[]);
-  return [Math.min(...values), Math.max(...values)];
-};
-const domain = getDomain(candles);
 
-function Handler(props:{caliber:number}){
+function Handler(props:{caliber:number, domain:[number, number]}){
+  const domain = props.domain
   const [labelX, setLabelX] = React.useState(0)
   const [labelY, setLabelY] = React.useState(0)
   const [labelState, setLabelState] = React.useState<State>(State.UNDETERMINED)
@@ -84,12 +80,20 @@ function Handler(props:{caliber:number}){
   )
 }
 
-export default () => {
+export default (props:{data:Candle[], slice:[number, number]}) => {
+  const candles = props.data.slice(props.slice[0], props.slice[1]);
+  const getDomain = (rows: Candle[]): [number, number] => {
+    if (rows.length == 0)
+      return [0, 0]
+    const values = rows.reduce((prev, { high, low }) => {prev.push(high);prev.push(low);return prev}, [] as number[]);
+    return [Math.min(...values), Math.max(...values)];
+  };
+  const domain = getDomain(candles);
   const caliber = WIDTH / candles.length;
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {width:WIDTH}]}>
       <Chart {...{ candles, domain }} /> 
-      <Handler caliber={caliber}/>  
+      <Handler caliber={caliber} domain={domain}/>  
     </View>
   );
 };

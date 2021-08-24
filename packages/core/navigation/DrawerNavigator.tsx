@@ -17,7 +17,7 @@ import Config from './Config'
 const Drawer = createDrawerNavigator<typeof DrawerParamList>();
 const Navigators:JSX.Element[] = []
 export function pushNavigators(currentValue:ScreenPackage){
-  Navigators.concat(Object.keys(currentValue).reduce((prev, value)=>{prev.push(DrawerNavigatorGeneric(value, currentValue[value].component, currentValue[value].title)); return prev}, Navigators))
+  Navigators.concat(Object.keys(currentValue).reduce((prev, value)=>{prev.push(DrawerNavigatorGeneric(value, currentValue[value].component, currentValue[value].title, currentValue[value].params)); return prev}, Navigators))
 }
 
 export default function DrawerNavigator() {
@@ -34,9 +34,9 @@ export default function DrawerNavigator() {
   );
 }
 
-function DrawerNavigatorGeneric(name:string, component:React.ComponentType<any>, headerTitle:string){
+function DrawerNavigatorGeneric(name:string, component:React.ComponentType<any>, headerTitle:string, params?:Record<string, any>){
   const drawerName = name.substring(0, name.lastIndexOf("Screen"))
-  DrawerParamList[drawerName] = undefined
+  DrawerParamList[drawerName] = params
   return (
     <Drawer.Screen
       key={drawerName}

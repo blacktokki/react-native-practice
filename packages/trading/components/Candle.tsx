@@ -6,7 +6,6 @@ const MARGIN = 2;
 
 export interface Candle {
   date: string;
-  day: number;
   open: number;
   high: number;
   low: number;
@@ -23,10 +22,11 @@ interface CandleProps {
 
 export default ({ candle, index, width, scaleY, scaleBody }: CandleProps) => {
   const { close, open, high, low } = candle;
-  const fill = close > open ? "#4AFA9A" : "#E33F64";
+  const fill = close >= open ? "#E33F64" : "#4A9AFA";
   const x = index * width;
   const max = Math.max(open, close);
   const min = Math.min(open, close);
+  const margin = Math.min(MARGIN, width*0.25) 
   return (
     <>
       <Line
@@ -38,9 +38,9 @@ export default ({ candle, index, width, scaleY, scaleBody }: CandleProps) => {
         strokeWidth={1}
       />
       <Rect
-        x={x + MARGIN}
+        x={x + margin}
         y={scaleY(max)}
-        width={width - MARGIN * 2}
+        width={width - margin * 2}
         height={scaleBody(max - min)}
         {...{ fill }}
       />

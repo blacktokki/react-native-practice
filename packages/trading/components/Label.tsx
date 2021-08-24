@@ -55,7 +55,7 @@ interface LabelProps {
 }
 
 export default ({ domain: [min, max], size, y, opacity }: LabelProps) => {
-  const value = interpolateNode(y, {inputRange:[0, size], outputRange:[min, max]});
+  const value = interpolateNode(y, {inputRange:[0, size], outputRange:[max, min]});
   const fValue = format(value)
 
   return (
