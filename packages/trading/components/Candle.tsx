@@ -1,28 +1,12 @@
 import React from "react";
-import { ScaleLinear } from "d3-scale";
 import { Line, Rect } from "react-native-svg";
+import { Candle, CandleProps } from "./CandleType"
 
-const MARGIN = 2;
-
-export interface Candle {
-  date: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-}
-
-interface CandleProps {
-  candle: Candle;
-  index: number;
-  width: number;
-  scaleY: ScaleLinear<number, number>;
-  scaleBody: ScaleLinear<number, number>;
-}
+const MARGIN = 1;
 
 export default ({ candle, index, width, scaleY, scaleBody }: CandleProps) => {
-  const { close, open, high, low } = candle;
-  const fill = close >= open ? "#E33F64" : "#4A9AFA";
+  const { close, open, high, low, up } = candle;
+  const fill = up ? "#E33F64" : "#4A9AFA";
   const x = index * width;
   const max = Math.max(open, close);
   const min = Math.min(open, close);
@@ -37,6 +21,16 @@ export default ({ candle, index, width, scaleY, scaleBody }: CandleProps) => {
         stroke={fill}
         strokeWidth={1}
       />
+      {(open==close)?(
+        <Line
+        x1={x + margin}
+        y1={scaleY(open)}
+        x2={x + width - margin}
+        y2={scaleY(close)}
+        stroke={fill}
+        strokeWidth={1}
+      />
+      ):(
       <Rect
         x={x + margin}
         y={scaleY(max)}
@@ -44,6 +38,7 @@ export default ({ candle, index, width, scaleY, scaleBody }: CandleProps) => {
         height={scaleBody(max - min)}
         {...{ fill }}
       />
+      )}
     </>
   );
 };
