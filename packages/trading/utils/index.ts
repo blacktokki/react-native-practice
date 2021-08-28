@@ -17,9 +17,9 @@ export function sleep(ms:number){
 
 export async function load_stocklist_json(){
     const _path = path.join('data', 'list.json')
-    init_folder('data')
-    if (exists_file(_path)){
-        var j = load_json(_path)
+    await init_folder('data')
+    if (await exists_file(_path)){
+        var j = await load_json(_path)
     }
     else
         var j = await request_company_list() as any
@@ -39,12 +39,12 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
     options = Object.assign({start_date:default_date.start_date, end_date:default_date.end_date, log_datetime:0}, options)
     let folder = options.isSimple? 'simple': 'stock'
     let _path = path.join('data', folder, full_code + '.json')
-    init_folder('data')
-    init_folder(path.join('data', folder))
+    await init_folder('data')
+    await init_folder(path.join('data', folder))
     let success = true;
     let j2:CompanyResponse
     try{
-        j2 = load_json(_path)
+        j2 = await load_json(_path)
         decompressModel(options.isSimple, j2)
     }catch(e){
         success = false;

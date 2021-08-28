@@ -110,7 +110,7 @@ export default function TabSearchScreen({
   return (
     <View>
       <TextInput style={{borderColor:'#000', borderWidth: 1, marginVertical: 30}} onChangeText={onChangeText} value={keyword}></TextInput>
-      <Button title={"Sync!"} onPress={()=>load_stock(data, setData, 1)}/>
+      <Button title={"Sync!"} onPress={()=>{}/*load_stock(data, setData, 1)*/}/>
       <Text>({syncLength[0]}/{syncLength[1]})</Text>
       <Separator/>
       <FlatList

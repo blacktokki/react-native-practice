@@ -10,7 +10,7 @@ export type RootStackParamList = {
 export type ScreenPackage = Record<string, {
   component: React.ComponentType<any>,
   title: string,
-  url: string,
+  url: string| Record<string, any>,
   params?: Record<string, any>
 }>
 

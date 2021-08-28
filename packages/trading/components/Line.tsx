@@ -9,7 +9,7 @@ interface LineProps {
 
 export default ({ x, y }: LineProps) => {
   return (
-    <Svg height='100%'>
+    <Svg height='100%' width='100%'>
       <Line
         x1={0}
         y1={0}

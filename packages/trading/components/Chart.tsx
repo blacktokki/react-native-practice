@@ -1,28 +1,35 @@
 import React from "react";
-import { Svg } from "react-native-svg";
+import { Line, Svg } from "react-native-svg";
 import { scaleLinear } from "d3-scale";
-import { Candle as CandleModel } from "./CandleType"
-interface ChartProps {
-  candles: CandleModel[];
-  domain: [number, number];
-  size: [number, number];
-  CandleComponent: React.ComponentType<any>
-}
+import { Candle as CandleModel, Chart as ChartModel } from "./CandleType"
 
-export default ({ candles, domain, CandleComponent, size }: ChartProps) => {
-  const width = size[0] / candles.length;
-  const scaleY = scaleLinear().domain(domain).range([size[1], 0]);
+export type ChartProps = {
+  candles: CandleModel[];
+  width: number
+  CandleComponent: React.ComponentType<any>
+} & ChartModel
+
+export default ({ candles, domain, CandleComponent, width, height, zDomain, verticalLines }: ChartProps) => {
+  const _width = width / candles.length;
+  const scaleY = scaleLinear().domain(domain).range([height, 0]);
+  const scaleZ = zDomain?scaleLinear().domain(zDomain).range([0, _width]): undefined
   const scaleBody = scaleLinear()
     .domain([0, Math.max(...domain) - Math.min(...domain)])
-    .range([0, size[1]]);
+    .range([0, height]);
   return (
-    <Svg width={size[0]} height={size[1]}>
+    <Svg width={width} height={height}>
       {candles.map((candle, index) => (
         <CandleComponent
           key={candle.date}
-          {...{ candle, index, width, scaleY, scaleBody }}
+          width={_width}
+          {...{ candle, index, scaleY, scaleZ, scaleBody }}
         />
       ))}
+      {
+        (verticalLines || []).map((value, index)=>{
+          return(<Line key={index} x1={0} x2={width} y1={scaleY(value) || 0} y2={scaleY(value) || 0} stroke={"red"} strokeWidth={1}/>)
+        })
+      }
     </Svg>
   );
 };
