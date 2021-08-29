@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { StyleSheet, Text, ScrollView, FlatList, TextInput, Button, Dimensions } from 'react-native';
+import * as Linking from 'expo-linking';
 import { StackScreenProps } from '@react-navigation/stack';
 import { DrawerParamList } from '@react-native-practice/core/types';
 import useResizeWindows from  '@react-native-practice/core/hooks/useResizeWindow';
@@ -23,6 +24,8 @@ export default function TabDetailScreen({
             "volume":parseInt(item.ACC_TRDVOL.replace(',', ''))
         }
     }).reverse():[], [data])
+    const shortCode = React.useMemo(()=>(fullCode || '').slice(3,9), [fullCode])
+    const stockPlusUrl = React.useMemo(()=>'stockplus://viewStock?code=A'+ shortCode + '&tabIndex=0&marketIndex=0', [shortCode])
     if (fullCode !=  route.params?.full_code){
         load_stock_json(route.params?.full_code).then((_data)=>{
             setFullCode(route.params?.full_code)
@@ -33,6 +36,8 @@ export default function TabDetailScreen({
     <ScrollView>
         <Text>{fullCode}</Text>
         <CoinBasePro data={CoinData} slice={[-1 -20, -1]} width={window.width}/>
-        {/*<Button title={'p'} onPress={()=>{console.log(route)}}></Button>*/}
+        {shortCode && Linking.canOpenURL(stockPlusUrl)?(
+            <Button title={shortCode} onPress={()=>{Linking.openURL(stockPlusUrl)}}></Button>
+        ):undefined}
     </ScrollView>)
 }

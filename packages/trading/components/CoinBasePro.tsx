@@ -42,6 +42,7 @@ type HandlerProps = {
   caliber:number, 
   candles:Candle[], 
   width:number,
+  rightWidth:number,
   chartModels:ChartModel[],
   candleRef: React.MutableRefObject<(candle: Candle) => void>
 }
@@ -64,7 +65,7 @@ function Handler(props:HandlerProps){
   let opacity = eq(labelState, State.ACTIVE);
   let candleX = props.candles[Math.floor(labelX * props.candles.length/props.width)]
   let chartY = props.chartModels[indexY]
-  let valueY = Math.floor(chartY.domain[1] + (chartY.domain[0] - chartY.domain[1])* Math.min(Math.max(0, (labelY-minY)/chartY.height), 1))
+  let valueY = Math.floor((chartY.domain[1] + (chartY.domain[0] - chartY.domain[1])* Math.min(Math.max(0, (labelY-minY)/chartY.height), 1)) *100)/100
   useEffect(()=>{props.candleRef?.current(candleX)}, [candleX])
   delay.current = {check:0, count:0}
   return (
@@ -73,7 +74,9 @@ function Handler(props:HandlerProps){
       delay.current.check=1
       onGestureEvent(e)
     }
-    delay.current.count= (delay.current.count + 1) % 12
+    delay.current.count= (delay.current.count + 1)
+    if (delay.current.count >= 12)
+      delay.current = {check:0, count:0}
   }}
   >
     <TapGestureHandler onGestureEvent={onGestureEvent}>
@@ -82,14 +85,14 @@ function Handler(props:HandlerProps){
         style={{
           transform: [{ translateY }],
           opacity,
-          flexDirection:'row-reverse',
+          flexDirection:'row',
           ...StyleSheet.absoluteFillObject,
         }}
       >
-        <Animated.View style={{backgroundColor:'white', width:80, height:20, top:-10, paddingRight:5}}>
-          <Animated.Text style={{textAlign:'right', alignSelf: 'stretch'}}>{numberWithCommas(valueY)}</Animated.Text>
-        </Animated.View>
         <Line x={props.width} y={0} />
+        <Animated.View style={{backgroundColor:'white', height:20, top:-10, paddingRight:5}}>
+          <Animated.Text style={{textAlign:'right', alignSelf: 'stretch', fontSize:10}}>{numberWithCommas(valueY)}</Animated.Text>
+        </Animated.View>
       </Animated.View>
       <Animated.View
         style={{
@@ -147,7 +150,7 @@ const getDomain = (rows: Candle[], isPrice:boolean): [number, number] => {
 
 export default (props:{data:Candle[], slice:[number, number], width:number}) => {
   const multiDotDepth = 20// 보유기한
-  const multiDotSubDepth = 250//계산일수
+  const multiDotSubDepth = 60//계산일수
   props.data.forEach((value, index ,array) => {
     if (index > 0)
       value.prev = array[index - 1]
@@ -189,7 +192,6 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
     }
   })
   const candleRef = React.useRef<(candle:Candle)=>void>((candle)=>{})
-  const caliber = candles.length?(props.width / candles.length):0
   const [multiDotValues, multiDotVolumes, multiDotAvgs, multiDotStds] = candles.reduce((prev ,curr)=>{
     curr.extra?.multiDot?.forEach((v)=>{
       prev[0].push(v.value)
@@ -199,27 +201,30 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
     })
     return prev
   }, [[], [], [], []] as [number[], number[], number[], number[]])
+  const rightWidth = 50
+  const width = props.width - rightWidth
+  const caliber = candles.length?(width / candles.length):0
   const chartHandlers:(ChartModel)[] = [
-    {domain: getDomain(candles, true), height: props.width / 4, CandleComponent: CandleComponent},
-    {domain: [0, 0], height: props.width / 16},
-    {domain: getDomain(candles, false), height: props.width / 8, CandleComponent: BarComponent},
-    {domain: [0, 0], height: props.width / 16},
-    {domain: [Math.min(...multiDotValues), Math.max(...multiDotValues)], height: props.width / 8, zDomain:[0, Math.max(...multiDotVolumes, 0)], verticalLines:[0], CandleComponent: MultiDot },
-    {domain: [0, 0], height: props.width / 16},
-    {domain: [Math.min(...multiDotAvgs, -1), Math.max(...multiDotAvgs, 1)], height: props.width / 8, zDomain:[0, Math.max(...multiDotStds, 0)], verticalLines:[0], CandleComponent: MultiDot2},
+    {domain: getDomain(candles, true), height: width / 4, CandleComponent: CandleComponent},
+    {domain: [0, 0], height: width / 16},
+    {domain: getDomain(candles, false), height: width / 8, CandleComponent: BarComponent},
+    {domain: [0, 0], height: width / 16},
+    {domain: [Math.min(...multiDotValues), Math.max(...multiDotValues)], height: width / 8, zDomain:[0, Math.max(...multiDotVolumes, 0)], verticalLines:[0], CandleComponent: MultiDot },
+    {domain: [0, 0], height: width / 16},
+    {domain: [Math.min(...multiDotAvgs, -1), Math.max(...multiDotAvgs, 1)], height: width / 8, zDomain:[0, Math.max(...multiDotStds, 0)], verticalLines:[0], CandleComponent: MultiDot2},
   ]
   candleRef.current = (candle)=>{}
   return (
     <View style={{width:props.width}}>
-      <View>
+      <View style={{width:width}}>
         {chartHandlers.map((chartHandler, index)=>chartHandler.CandleComponent?(
           <View style={styles.container} key={index}>
-            <Chart {...{ candles }} domain={chartHandler.domain} CandleComponent={chartHandler.CandleComponent}  width={props.width} height={chartHandler.height} zDomain={chartHandler.zDomain} verticalLines={chartHandler.verticalLines}/> 
+            <Chart {...{ candles }} domain={chartHandler.domain} CandleComponent={chartHandler.CandleComponent}  width={width} height={chartHandler.height} zDomain={chartHandler.zDomain} verticalLines={chartHandler.verticalLines}/> 
           </View>
         ):(
           <View style={[styles.container, {minHeight:chartHandler.height}]} key={index}/>
         ))}
-        <Handler caliber={caliber} candles={candles} width={props.width} chartModels={chartHandlers} candleRef={candleRef}/>
+        <Handler caliber={caliber} candles={candles} width={width} chartModels={chartHandlers} candleRef={candleRef} rightWidth={rightWidth}/>
       </View>
       <Plot {...{ candles }} domain={chartHandlers[2].domain} size={[props.width, props.width * 0.75]} depth={multiDotDepth} subDepth={multiDotSubDepth}/>
       <Side candleSetter={(setter)=>{candleRef.current = setter}}/>
