@@ -19,6 +19,8 @@ export interface Candle {
             avg?:number,
             std?:number,
         }[],
+        dd?:number,
+        tdd?:number,
     }
 }
 

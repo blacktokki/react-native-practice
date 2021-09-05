@@ -8,6 +8,7 @@
     "link:default": "npm link packages/default",
     "link:marble": "npm link packages/marble",
     "link:trading": "npm link packages/trading",
+    "link:kiwoom": "npm link packages/kiwoom",
     "postinstall": "concurrently 'npm:link:*'",
     "start": "expo start",
     "android": "expo start --android",
@@ -76,7 +77,10 @@
     },
     "win": {
       "target": [
-        "nsis"
+        {
+          "target": "nsis",
+          "arch": ["ia32"]
+        }
       ]
     },
     "extraMetadata": {

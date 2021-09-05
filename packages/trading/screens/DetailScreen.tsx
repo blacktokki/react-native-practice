@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Text, ScrollView, FlatList, TextInput, Button, Dimensions } from 'react-native';
+import { StyleSheet, Text, ScrollView, FlatList, TextInput, Button, Dimensions, Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import { StackScreenProps } from '@react-navigation/stack';
 import { DrawerParamList } from '@react-native-practice/core/types';
@@ -36,7 +36,7 @@ export default function TabDetailScreen({
     <ScrollView>
         <Text>{fullCode}</Text>
         <CoinBasePro data={CoinData} slice={[-1 -20, -1]} width={window.width}/>
-        {shortCode && Linking.canOpenURL(stockPlusUrl)?(
+        {Platform.OS == 'android' && shortCode && Linking.canOpenURL(stockPlusUrl)?(
             <Button title={shortCode} onPress={()=>{Linking.openURL(stockPlusUrl)}}></Button>
         ):undefined}
     </ScrollView>)

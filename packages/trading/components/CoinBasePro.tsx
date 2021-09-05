@@ -16,6 +16,7 @@ import CandleComponent from "./Candle";
 import BarComponent from "./Bar"
 import MultiDot from "./MultiDot"
 import MultiDot2 from "./MultiDot2"
+import LineDot from "./LineDot"
 import Plot from "./Plot"
 
 const styles = StyleSheet.create({
@@ -151,6 +152,7 @@ const getDomain = (rows: Candle[], isPrice:boolean): [number, number] => {
 export default (props:{data:Candle[], slice:[number, number], width:number}) => {
   const multiDotDepth = 20// 보유기한
   const multiDotSubDepth = 60//계산일수
+  const tddDepth = 252
   props.data.forEach((value, index ,array) => {
     if (index > 0)
       value.prev = array[index - 1]
@@ -173,6 +175,23 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
       })
       prev = prev.prev || prev
     }
+    // tdd
+    prev = value
+    let dds = []
+    for(let i =0; i < tddDepth; i++){
+      dds.push(prev.close)
+      prev = prev.prev || prev
+    }
+    value.extra.dd = value.close / Math.max(...dds) - 1
+    
+    prev = value
+    dds = []  
+    for(let i = 0; i < tddDepth; i++){
+      if (prev.extra?.dd)
+        dds.push(prev.extra.dd)
+      prev = prev.prev || prev
+    }
+    value.extra.tdd = Math.min(...dds)
   });
   const candles = props.data.slice(props.slice[0], props.slice[1]);
   candles.forEach((value) => {
@@ -192,15 +211,17 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
     }
   })
   const candleRef = React.useRef<(candle:Candle)=>void>((candle)=>{})
-  const [multiDotValues, multiDotVolumes, multiDotAvgs, multiDotStds] = candles.reduce((prev ,curr)=>{
+  const [multiDotValues, multiDotVolumes, multiDotAvgs, multiDotStds, tddValues] = candles.reduce((prev ,curr)=>{
     curr.extra?.multiDot?.forEach((v)=>{
       prev[0].push(v.value)
       prev[1].push(v.volume)
       if(v.avg) prev[2].push(v.avg)
       if(v.std) prev[3].push(v.std)
     })
+    if(curr.extra?.dd)prev[4].push(curr.extra?.dd)
+    if(curr.extra?.tdd)prev[4].push(curr.extra?.tdd)
     return prev
-  }, [[], [], [], []] as [number[], number[], number[], number[]])
+  }, [[], [], [], [], []] as [number[], number[], number[], number[], number[]])
   const rightWidth = 50
   const width = props.width - rightWidth
   const caliber = candles.length?(width / candles.length):0
@@ -212,6 +233,8 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
     {domain: [Math.min(...multiDotValues), Math.max(...multiDotValues)], height: width / 8, zDomain:[0, Math.max(...multiDotVolumes, 0)], verticalLines:[0], CandleComponent: MultiDot },
     {domain: [0, 0], height: width / 16},
     {domain: [Math.min(...multiDotAvgs, -1), Math.max(...multiDotAvgs, 1)], height: width / 8, zDomain:[0, Math.max(...multiDotStds, 0)], verticalLines:[0], CandleComponent: MultiDot2},
+    {domain: [0, 0], height: width / 16},
+    {domain: [Math.min(...tddValues), Math.max(...tddValues)], height: width / 8, CandleComponent: LineDot, verticalLines:[0]},
   ]
   candleRef.current = (candle)=>{}
   return (
