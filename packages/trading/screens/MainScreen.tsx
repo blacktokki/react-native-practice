@@ -6,7 +6,7 @@ import SectionDummy from '@react-native-practice/core/components/SectionDummy'
 import SliderSection from '../components/SliderSection'
 import DraggableFlatListMain from '@react-native-practice/core/components/DraggableFlatListMain'
 import { cdf, laplace_cdf } from '../utils/mathutil'
-import CoinBasePro from  '../components/CoinBasePro'
+import CoinBasePro from  '../components/ChartContainer'
 
 export default function TabMainScreen({
   navigation

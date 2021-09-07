@@ -1,7 +1,7 @@
 import React from "react";
 import { ScaleLinear } from "d3-scale";
 import { Line, Rect } from "react-native-svg";
-import { Candle, CandleProps } from "./CandleType"
+import { Candle, CandleProps } from "../CandleType"
 
 const MARGIN = 1;
 

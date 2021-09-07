@@ -1,6 +1,6 @@
 import React from "react";
 import { Rect } from "react-native-svg";
-import { Candle as CandleType ,CandleProps } from "../CandleType"
+import { Candle as CandleType ,CandleProps, ChartIndex } from "../CandleType"
 
 const MARGIN = 1;
 
@@ -25,8 +25,14 @@ const Bar = ({ candle, index, width, scaleY, scaleBody }: CandleProps) => {
 };
 
 export default {
-    Component: Bar,
-    proc: (candle:CandleType)=>{
-        candle.volumeUp = candle.prev?((candle.prev.volume==candle.volume)?candle.prev.volumeUp:(candle.prev.volume<candle.volume)):true
+    CandleComponent: Bar,
+    setData: (candle)=>{
+      candle.volumeUp = candle.prev?((candle.prev.volume==candle.volume)?candle.prev.volumeUp:(candle.prev.volume<candle.volume)):true
+    },
+    setValues: (prev, candle)=>{
+      prev.values.push(candle.volume)
+    },
+    getDomains: (values)=>{
+      return {domain:values.values.length?[Math.min(...values.values, 0), Math.max(...values.values)]:[0, 0], zDomain:undefined} 
     }
-}
+} as ChartIndex

@@ -6,7 +6,7 @@ import { DrawerParamList } from '@react-native-practice/core/types';
 import useResizeWindows from  '@react-native-practice/core/hooks/useResizeWindow';
 import { CompanyResponse } from '../types';
 import { load_stock_json } from '../utils';
-import CoinBasePro from '../components/CoinBasePro';
+import CoinBasePro from '../components/ChartContainer';
 
 export default function TabDetailScreen({
     navigation, route

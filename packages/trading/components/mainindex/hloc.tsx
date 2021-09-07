@@ -1,6 +1,7 @@
+import math from "mathjs";
 import React from "react";
 import { Line, Rect } from "react-native-svg";
-import { Candle as CandleType, CandleProps } from "../CandleType"
+import { Candle as CandleType, CandleProps, ChartIndex } from "../CandleType"
 
 const MARGIN = 1;
 
@@ -44,12 +45,19 @@ const Candle = ({ candle, index, width, scaleY, scaleBody }: CandleProps) => {
 };
 
 export default {
-    Component: Candle,
-    proc: (candle:CandleType)=>{
+    CandleComponent: Candle,
+    setData: (candle)=>{
       if (candle.open==candle.close){
         candle.up = candle.prev?((candle.prev.close==candle.open)?candle.prev.up:(candle.prev.close<candle.open)):true
       }
       else
         candle.up = candle.open < candle.close
     },
-}
+    setValues: (prev, candle) =>{
+      prev.values.push(candle.low)
+      prev.values.push(candle.high)
+    },
+    getDomains: (values)=>{
+      return {domain:values.values.length?[Math.min(...values.values), Math.max(...values.values)]:[0, 0], zDomain:undefined} 
+    }
+} as ChartIndex

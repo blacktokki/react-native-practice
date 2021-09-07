@@ -1,13 +1,7 @@
 import React from "react";
 import { Line, Svg } from "react-native-svg";
 import { scaleLinear } from "d3-scale";
-import { Candle as CandleModel, Chart as ChartModel } from "./CandleType"
-
-export type ChartProps = {
-  candles: CandleModel[];
-  width: number
-  CandleComponent: React.ComponentType<any>
-} & ChartModel
+import { ChartProps } from "./CandleType"
 
 export default ({ candles, domain, CandleComponent, width, height, zDomain, verticalLines }: ChartProps) => {
   const _width = width / candles.length;

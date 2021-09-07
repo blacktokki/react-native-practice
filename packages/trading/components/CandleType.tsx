@@ -36,10 +36,39 @@ export interface CandleProps {
 
   
 export interface Chart {
-    domain: [number, number];
-    height: number
     CandleComponent: React.ComponentType<any>
-    zDomain?: [number, number];
     verticalLines?: number[];
-    
 }
+
+export type ChartProps = Chart & {
+    width: number,
+    height: number
+    candles: Candle[];
+    domain: [number, number];
+    zDomain?: [number, number];
+  }
+
+export type ChartIndex = Chart & {
+    setData:(candle:Candle) => void
+    setValues:(prev:HandlerValues, candle:Candle) => void
+    getDomains:(values:HandlerValues)=>HandlerDomains
+}
+
+  
+export type HandlerValues = {values:number[], zValues:number[]}
+export type HandlerDomains = {domain:[number, number], zDomain?:[number, number]}
+
+export type Handler={
+    height:number,
+    chartIndex?:ChartIndex
+}
+  
+  export type HandlerProps = {
+    caliber:number, 
+    candles:Candle[], 
+    width:number,
+    rightWidth:number,
+    chartHandlers: Handler[],
+    domains: HandlerDomains[],
+    candleRef: React.MutableRefObject<(candle: Candle) => void>
+  }
