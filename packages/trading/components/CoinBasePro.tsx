@@ -12,6 +12,8 @@ import Animated, {
 import Chart from "./Chart";
 import Line from "./Line";
 import { Candle, Chart as ChartModel } from "./CandleType"
+import hloc from "./mainindex/hloc";
+import volume from "./subindex/volume";
 import CandleComponent from "./Candle";
 import BarComponent from "./Bar"
 import MultiDot from "./MultiDot"
@@ -150,19 +152,11 @@ const getDomain = (rows: Candle[], isPrice:boolean): [number, number] => {
 };
 
 export default (props:{data:Candle[], slice:[number, number], width:number}) => {
+  /*
   const multiDotDepth = 20// 보유기한
   const multiDotSubDepth = 60//계산일수
   const tddDepth = 252
   props.data.forEach((value, index ,array) => {
-    if (index > 0)
-      value.prev = array[index - 1]
-    if (value.open==value.close){
-      value.up = value.prev?((value.prev.close==value.open)?value.prev.up:(value.prev.close<value.open)):true
-    }
-    else
-      value.up = value.open < value.close
-    value.volumeUp = value.prev?((value.prev.volume==value.volume)?value.prev.volumeUp:(value.prev.volume<value.volume)):true
-    value.extra = {}
     // multi dot
     value.extra.multiDot = []
     let prev = value
@@ -192,8 +186,33 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
       prev = prev.prev || prev
     }
     value.extra.tdd = Math.min(...dds)
-  });
+  });*/
+  const rightWidth = 50
+  const width = props.width - rightWidth
+  const chartHandlers:{height:number, chartIndex?:{Component:React.ComponentType<any>, proc:(candle:Candle)=>void}, domain:(candles:Candle[])=>[number]}[] = [
+    {height: width / 4, chartIndex:hloc},
+    {height: width / 16},
+    {height: width / 8, chartIndex:volume},
+    // {domain: [0, 0], height: width / 16},
+    // {domain: [Math.min(...multiDotValues), Math.max(...multiDotValues)], height: width / 8, zDomain:[0, Math.max(...multiDotVolumes, 0)], verticalLines:[0], CandleComponent: MultiDot },
+    // {domain: [0, 0], height: width / 16},
+    // {domain: [Math.min(...multiDotAvgs, -1), Math.max(...multiDotAvgs, 1)], height: width / 8, zDomain:[0, Math.max(...multiDotStds, 0)], verticalLines:[0], CandleComponent: MultiDot2},
+    // {domain: [0, 0], height: width / 16},
+    // {domain: [Math.min(...tddValues), Math.max(...tddValues)], height: width / 8, CandleComponent: LineDot, verticalLines:[0]},
+  ]
+  props.data.forEach((value, index ,array) => {
+    if (index > 0)
+      value.prev = array[index - 1]
+    value.extra = {}
+    chartHandlers.forEach((handler)=>{
+      handler.chartIndex?.proc(value)
+    })
+    
+  })
+
   const candles = props.data.slice(props.slice[0], props.slice[1]);
+  const caliber = candles.length?(width / candles.length):0
+  /*
   candles.forEach((value) => {
     // multi dot avgstd
     for(let i = 0; i < multiDotDepth; i++){
@@ -209,8 +228,9 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
         value.extra.multiDot[i].std = std
       }
     }
-  })
+  })*/
   const candleRef = React.useRef<(candle:Candle)=>void>((candle)=>{})
+  /*
   const [multiDotValues, multiDotVolumes, multiDotAvgs, multiDotStds, tddValues] = candles.reduce((prev ,curr)=>{
     curr.extra?.multiDot?.forEach((v)=>{
       prev[0].push(v.value)
@@ -221,21 +241,7 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
     if(curr.extra?.dd)prev[4].push(curr.extra?.dd)
     if(curr.extra?.tdd)prev[4].push(curr.extra?.tdd)
     return prev
-  }, [[], [], [], [], []] as [number[], number[], number[], number[], number[]])
-  const rightWidth = 50
-  const width = props.width - rightWidth
-  const caliber = candles.length?(width / candles.length):0
-  const chartHandlers:(ChartModel)[] = [
-    {domain: getDomain(candles, true), height: width / 4, CandleComponent: CandleComponent},
-    {domain: [0, 0], height: width / 16},
-    {domain: getDomain(candles, false), height: width / 8, CandleComponent: BarComponent},
-    {domain: [0, 0], height: width / 16},
-    {domain: [Math.min(...multiDotValues), Math.max(...multiDotValues)], height: width / 8, zDomain:[0, Math.max(...multiDotVolumes, 0)], verticalLines:[0], CandleComponent: MultiDot },
-    {domain: [0, 0], height: width / 16},
-    {domain: [Math.min(...multiDotAvgs, -1), Math.max(...multiDotAvgs, 1)], height: width / 8, zDomain:[0, Math.max(...multiDotStds, 0)], verticalLines:[0], CandleComponent: MultiDot2},
-    {domain: [0, 0], height: width / 16},
-    {domain: [Math.min(...tddValues), Math.max(...tddValues)], height: width / 8, CandleComponent: LineDot, verticalLines:[0]},
-  ]
+  }, [[], [], [], [], []] as [number[], number[], number[], number[], number[]])*/
   candleRef.current = (candle)=>{}
   return (
     <View style={{width:props.width}}>
@@ -249,7 +255,7 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
         ))}
         <Handler caliber={caliber} candles={candles} width={width} chartModels={chartHandlers} candleRef={candleRef} rightWidth={rightWidth}/>
       </View>
-      <Plot {...{ candles }} domain={chartHandlers[2].domain} size={[props.width, props.width * 0.75]} depth={multiDotDepth} subDepth={multiDotSubDepth}/>
+      {/*<Plot {...{ candles }} domain={chartHandlers[2].domain} size={[props.width, props.width * 0.75]} depth={multiDotDepth} subDepth={multiDotSubDepth}/>*/}
       <Side candleSetter={(setter)=>{candleRef.current = setter}}/>
     </View>
   );

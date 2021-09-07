@@ -38,7 +38,8 @@ export interface CandleProps {
 export interface Chart {
     domain: [number, number];
     height: number
+    CandleComponent: React.ComponentType<any>
     zDomain?: [number, number];
     verticalLines?: number[];
-    CandleComponent?: React.ComponentType<any>
+    
 }
