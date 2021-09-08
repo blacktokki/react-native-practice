@@ -38,7 +38,7 @@ export default function Handler(props:HandlerProps){
     const [labelX, setLabelX] = React.useState(0)
     const [labelY, setLabelY] = React.useState(0)
     const [labelState, setLabelState] = React.useState<State>(State.UNDETERMINED)
-    const currentY = React.useMemo(()=>props.chartHandlers.reduce((prev, cur)=>{ return [prev[0] + cur.height, prev[0]<=labelY?prev[1]+1:Math.max(prev[1],0), prev[0]<=labelY?prev[0]:prev[2]]}, [0, -1, 0]), [labelY])
+    const currentY = React.useMemo(()=>props.charts.reduce((prev, cur)=>{ return [prev[0] + cur.height, prev[0]<=labelY?prev[1]+1:Math.max(prev[1],0), prev[0]<=labelY?prev[0]:prev[2]]}, [0, -1, 0]), [labelY])
     let [totalY, indexY, minY] = currentY
     const delay = React.useRef({check:0, count:0})
     const onGestureEvent = (e:any)=>{
@@ -51,8 +51,8 @@ export default function Handler(props:HandlerProps){
     let translateX = add(sub(labelX, modulo(labelX, props.caliber)), props.caliber / 2);
     let opacity = eq(labelState, State.ACTIVE);
     let candleX = props.candles[Math.floor(labelX * props.candles.length/props.width)]
-    let chartY = props.domains[indexY]
-    let valueY = Math.floor((chartY.domain[1] + (chartY.domain[0] - chartY.domain[1])* Math.min(Math.max(0, (labelY-minY)/props.chartHandlers[indexY].height), 1)) *100)/100
+    let chartY = props.charts[indexY].aggregate || {domain:[0, 0]}
+    let valueY = Math.floor((chartY.domain[1] + (chartY.domain[0] - chartY.domain[1])* Math.min(Math.max(0, (labelY-minY)/props.charts[indexY].height), 1)) *100)/100
     useEffect(()=>{props.candleRef?.current(candleX)}, [candleX])
     delay.current = {check:0, count:0}
     return (

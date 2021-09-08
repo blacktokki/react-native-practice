@@ -4,9 +4,9 @@ import { StyleSheet, View } from "react-native";
 import Chart from "./Chart";
 import Handler from  "./Handler"
 import Side from "./Side"
-import { Candle, HandlerValues, HandlerDomains, Handler as HandlerType } from "./CandleType"
-import hloc from "./mainindex/hloc";
-import volume from "./subindex/volume";
+import { Candle, Chart as ChartType } from "./CandleType"
+import hloc from "./indices/hloc";
+import volume from "./indices/volume";
 import CandleComponent from "./unused/Candle";
 import BarComponent from "./unused/Bar"
 import MultiDot from "./unused/MultiDot"
@@ -67,7 +67,7 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
   });*/
   const rightWidth = 50
   const width = props.width - rightWidth
-  const chartHandlers:HandlerType[] = [
+  const charts:ChartType[] = [
     {height: width / 4, chartIndex:hloc},
     {height: width / 16},
     {height: width / 8, chartIndex:volume},
@@ -82,27 +82,27 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
     if (index > 0)
       value.prev = array[index - 1]
     value.extra = {}
-    chartHandlers.forEach((handler)=>{
+    charts.forEach((handler)=>{
       handler.chartIndex?.setData(value)
     })
   })
   const candles = props.data.slice(props.slice[0], props.slice[1]);
   const caliber = candles.length?(width / candles.length):0
-  const values:HandlerValues[] = chartHandlers.map((handler)=>({values:[], zValues:[]}))
-  const domains:HandlerDomains[] = []
+  charts.forEach((chart)=>{chart.aggregate = {values:[], zValues:[], domain:[0, 0]}});
   candles.forEach((value, index)=>{
-    chartHandlers.forEach((handler, hIndex)=>{
-      if(index == 0)
-        values.push({values:[], zValues:[]})
-      handler.chartIndex?.setValues(values[hIndex], value)
+    charts.forEach((handler, hIndex)=>{
+      const aggregate = charts[hIndex].aggregate
+      if(aggregate){
+        handler.chartIndex?.setValues(aggregate, value)
+      }
     })
   })
-  chartHandlers.forEach((handler, hIndex)=>{
-    if(handler.chartIndex)
-      domains.push(handler.chartIndex.getDomains(values[hIndex]))
-    else
-      domains.push({domain:[0, 0], zDomain:[0, 0]})
-  })
+  charts.forEach((handler, hIndex)=>{
+    const aggregate = charts[hIndex].aggregate
+    if(handler.chartIndex && aggregate){
+      handler.chartIndex?.setDomains(aggregate)
+    }
+   })
   /*
   candles.forEach((value) => {
     // multi dot avgstd
@@ -137,14 +137,19 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
   return (
     <View style={{width:props.width}}>
       <View style={{width:width}}>
-        {chartHandlers.map((chartHandler, index)=>chartHandler.chartIndex?(
+        {charts.map((chartHandler, index)=>chartHandler.chartIndex?(
           <View style={styles.container} key={index}>
-            <Chart {...{ candles }} domain={domains[index].domain} CandleComponent={chartHandler.chartIndex.CandleComponent}  width={width} height={chartHandler.height} zDomain={domains[index].zDomain} verticalLines={chartHandler.chartIndex.verticalLines}/> 
+            <Chart 
+              {...{ candles, width }}
+              aggregate={chartHandler.aggregate}
+              height={chartHandler.height}
+              chartIndex={chartHandler.chartIndex}
+            />
           </View>
         ):(
           <View style={[styles.container, {minHeight:chartHandler.height}]} key={index}/>
         ))}
-        <Handler caliber={caliber} candles={candles} width={width} chartHandlers={chartHandlers} domains={domains} candleRef={candleRef} rightWidth={rightWidth}/>
+        <Handler caliber={caliber} candles={candles} width={width} charts={charts} candleRef={candleRef} rightWidth={rightWidth}/>
       </View>
       {/*<Plot {...{ candles }} domain={chartHandlers[2].domain} size={[props.width, props.width * 0.75]} depth={multiDotDepth} subDepth={multiDotSubDepth}/>*/}
       <Side candleSetter={(setter)=>{candleRef.current = setter}}/>

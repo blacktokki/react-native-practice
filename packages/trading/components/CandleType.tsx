@@ -1,5 +1,20 @@
 import { ScaleLinear } from "d3-scale";
 
+type Aggregate = {
+  values:number[], 
+  zValues:number[],
+  domain:[number, number],
+  zDomain?:[number, number]
+}
+
+export type IndexType = {
+  CandleComponent: React.ComponentType<any>  
+  setData:(candle:Candle) => void
+  setValues:(prev:Aggregate, candle:Candle) => void
+  setDomains:(aggregate:Aggregate)=>void
+  getVerticals?:(aggregate:Aggregate)=>number[]
+}
+
 export interface Candle {
     date: string;
     open: number;
@@ -8,9 +23,13 @@ export interface Candle {
     close: number;
     volume: number;
     prev?: Candle;
-    up?: boolean;
-    volumeUp?: boolean;
     extra?:{
+        hloc?:{
+          up: boolean;
+        },
+        volume?:{
+          volumeUp: boolean;
+        },
         multiDot?:{
             fill:string,
             value:number,
@@ -24,7 +43,6 @@ export interface Candle {
     }
 }
 
-
 export interface CandleProps {
     candle: Candle;
     index: number;
@@ -32,43 +50,24 @@ export interface CandleProps {
     scaleY: ScaleLinear<number, number>;
     scaleZ?: ScaleLinear<number, number>;
     scaleBody: ScaleLinear<number, number>;
-  }
-
-  
-export interface Chart {
-    CandleComponent: React.ComponentType<any>
-    verticalLines?: number[];
 }
 
-export type ChartProps = Chart & {
-    width: number,
-    height: number
-    candles: Candle[];
-    domain: [number, number];
-    zDomain?: [number, number];
-  }
-
-export type ChartIndex = Chart & {
-    setData:(candle:Candle) => void
-    setValues:(prev:HandlerValues, candle:Candle) => void
-    getDomains:(values:HandlerValues)=>HandlerDomains
+export type Chart = {
+  height:number,
+  chartIndex?:IndexType,
+  aggregate?:Aggregate
 }
 
-  
-export type HandlerValues = {values:number[], zValues:number[]}
-export type HandlerDomains = {domain:[number, number], zDomain?:[number, number]}
-
-export type Handler={
-    height:number,
-    chartIndex?:ChartIndex
+type CommonProps = {
+  candles:Candle[], 
+  width:number,
 }
-  
-  export type HandlerProps = {
-    caliber:number, 
-    candles:Candle[], 
-    width:number,
-    rightWidth:number,
-    chartHandlers: Handler[],
-    domains: HandlerDomains[],
-    candleRef: React.MutableRefObject<(candle: Candle) => void>
-  }
+
+export type ChartProps = CommonProps & Chart
+
+export type HandlerProps = CommonProps & {
+  charts: Chart[],
+  caliber:number, 
+  rightWidth:number,
+  candleRef: React.MutableRefObject<(candle: Candle) => void>
+}

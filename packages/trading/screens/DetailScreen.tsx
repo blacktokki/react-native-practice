@@ -21,7 +21,7 @@ export default function TabDetailScreen({
             "high": parseInt(item.TDD_HGPRC.replace(',', '')),
             "low": parseInt(item.TDD_LWPRC.replace(',', '')),
             "close":parseInt( item.TDD_CLSPRC.replace(',', '')),
-            "volume":parseInt(item.ACC_TRDVOL.replace(',', ''))
+            "volume":parseInt(item.ACC_TRDVOL.replace(',', '')),
         }
     }).reverse():[], [data])
     const shortCode = React.useMemo(()=>(fullCode || '').slice(3,9), [fullCode])

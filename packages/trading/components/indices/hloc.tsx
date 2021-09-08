@@ -1,12 +1,13 @@
 import math from "mathjs";
 import React from "react";
 import { Line, Rect } from "react-native-svg";
-import { Candle as CandleType, CandleProps, ChartIndex } from "../CandleType"
+import { CandleProps, IndexType } from "../CandleType"
 
 const MARGIN = 1;
 
 const Candle = ({ candle, index, width, scaleY, scaleBody }: CandleProps) => {
-  const { close, open, high, low, up } = candle;
+  const { close, open, high, low } = candle;
+  const up = candle.extra?.hloc?.up;
   const fill = up ? "#E33F64" : "#4A9AFA";
   const x = index * width;
   const max = Math.max(open, close);
@@ -47,17 +48,19 @@ const Candle = ({ candle, index, width, scaleY, scaleBody }: CandleProps) => {
 export default {
     CandleComponent: Candle,
     setData: (candle)=>{
-      if (candle.open==candle.close){
-        candle.up = candle.prev?((candle.prev.close==candle.open)?candle.prev.up:(candle.prev.close<candle.open)):true
-      }
+      let hlocUp;
+      if (candle.open==candle.close)
+        hlocUp = candle.prev?((candle.prev.close==candle.open && candle.prev.extra?.hloc)?candle.prev.extra.hloc.up:(candle.prev.close<candle.open)):true
       else
-        candle.up = candle.open < candle.close
+        hlocUp = candle.open < candle.close
+      if (candle.extra)
+        candle.extra.hloc = {up: hlocUp}
     },
     setValues: (prev, candle) =>{
       prev.values.push(candle.low)
       prev.values.push(candle.high)
     },
-    getDomains: (values)=>{
-      return {domain:values.values.length?[Math.min(...values.values), Math.max(...values.values)]:[0, 0], zDomain:undefined} 
+    setDomains: (values)=>{
+      values.domain = values.values.length?[Math.min(...values.values), Math.max(...values.values)]:[0, 0]
     }
-} as ChartIndex
+} as IndexType
