@@ -9,7 +9,7 @@ type Aggregate = {
 
 export type IndexType = {
   CandleComponent: React.ComponentType<any>  
-  setData:(candle:Candle) => void
+  setData:(candle:Candle, chart:Chart) => void
   setValues:(prev:Aggregate, candle:Candle) => void
   setDomains:(aggregate:Aggregate)=>void
   getVerticals?:(aggregate:Aggregate)=>number[]
@@ -30,16 +30,22 @@ export interface Candle {
         volume?:{
           volumeUp: boolean;
         },
-        multiDot?:{
-            fill:string,
-            value:number,
-            volume:number,
-            desc:string,
-            avg?:number,
-            std?:number,
-        }[],
-        dd?:number,
-        tdd?:number,
+        mpt1?:{
+          mpts:{
+              fill:string,
+              value:number,
+              // volume:number,
+              desc:string,
+              avg?:number,
+              avgExp?:number, 
+              std?:number,
+          }[],
+          _first:Candle,
+        }
+        tdd?:{
+          dd:number,
+          tdd:number
+        }
     }
 }
 
@@ -56,6 +62,16 @@ export type Chart = {
   height:number,
   chartIndex?:IndexType,
   aggregate?:Aggregate
+  extra?:{
+    mpt1?:{
+      depth:number,
+      subDepth:number
+      include?:number[]
+    }
+    tdd?:{
+      depth:number,
+    }
+  }
 }
 
 type CommonProps = {
@@ -70,4 +86,5 @@ export type HandlerProps = CommonProps & {
   caliber:number, 
   rightWidth:number,
   candleRef: React.MutableRefObject<(candle: Candle) => void>
+  shiftRef: React.MutableRefObject<(shift: number) => void>
 }

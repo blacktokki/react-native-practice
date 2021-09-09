@@ -7,11 +7,8 @@ import Side from "./Side"
 import { Candle, Chart as ChartType } from "./CandleType"
 import hloc from "./indices/hloc";
 import volume from "./indices/volume";
-import CandleComponent from "./unused/Candle";
-import BarComponent from "./unused/Bar"
-import MultiDot from "./unused/MultiDot"
-import MultiDot2 from "./unused/MultiDot2"
-import LineDot from "./unused/LineDot"
+import mpt1 from "./indices/mpt1";
+import tdd from "./indices/tdd";
 import Plot from "./Plot"
 
 const styles = StyleSheet.create({
@@ -21,72 +18,33 @@ const styles = StyleSheet.create({
 });
 
 
-// function avgstd(array:number[]) {
-//   const n = array.length
-//   if (n == 0)
-//     return [0, 0]
-//   const mean = array.reduce((a, b) => a + b) / n
-//   return [mean, Math.sqrt(array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)]
-// }
-
-export default (props:{data:Candle[], slice:[number, number], width:number}) => {
-  /*
-  const multiDotDepth = 20// 보유기한
-  const multiDotSubDepth = 60//계산일수
-  const tddDepth = 252
-  props.data.forEach((value, index ,array) => {
-    // multi dot
-    value.extra.multiDot = []
-    let prev = value
-    for(let i = 0; i < multiDotDepth; i++){
-      value.extra.multiDot.push({
-          fill: 'rgba('+ (255 - i * 10) +', 0, '+ (0 + i * 10 )  +', 0.5)',
-          value:(value.close>0 && prev.open>0)?100 * (value.close/prev.open -1):0,
-          volume:(value.volume + prev.volume)/2, 
-          desc: prev.date + "~" + value.date 
-      })
-      prev = prev.prev || prev
-    }
-    // tdd
-    prev = value
-    let dds = []
-    for(let i =0; i < tddDepth; i++){
-      dds.push(prev.close)
-      prev = prev.prev || prev
-    }
-    value.extra.dd = value.close / Math.max(...dds) - 1
-    
-    prev = value
-    dds = []  
-    for(let i = 0; i < tddDepth; i++){
-      if (prev.extra?.dd)
-        dds.push(prev.extra.dd)
-      prev = prev.prev || prev
-    }
-    value.extra.tdd = Math.min(...dds)
-  });*/
+export default (props:{data:Candle[], width:number, sizeRef?:React.MutableRefObject<(shift: number, candleCount:number) => void>}) => {
+  const [shift, setShift] = React.useState(0)
+  const rawData = React.useRef(props.data)
   const rightWidth = 50
   const width = props.width - rightWidth
+  const candleCount = 20
   const charts:ChartType[] = [
     {height: width / 4, chartIndex:hloc},
     {height: width / 16},
     {height: width / 8, chartIndex:volume},
-    // {domain: [0, 0], height: width / 16},
-    // {domain: [Math.min(...multiDotValues), Math.max(...multiDotValues)], height: width / 8, zDomain:[0, Math.max(...multiDotVolumes, 0)], verticalLines:[0], CandleComponent: MultiDot },
-    // {domain: [0, 0], height: width / 16},
-    // {domain: [Math.min(...multiDotAvgs, -1), Math.max(...multiDotAvgs, 1)], height: width / 8, zDomain:[0, Math.max(...multiDotStds, 0)], verticalLines:[0], CandleComponent: MultiDot2},
-    // {domain: [0, 0], height: width / 16},
-    // {domain: [Math.min(...tddValues), Math.max(...tddValues)], height: width / 8, CandleComponent: LineDot, verticalLines:[0]},
+    {height: width / 16},
+    {height: width / 8, chartIndex:mpt1, extra:{mpt1:{depth:20, subDepth:20, include:[0,4,9,14,19]}}},
+    {height: width / 16},
+    {height: width / 8, chartIndex:tdd, extra:{tdd:{depth:252}}},
   ]
-  props.data.forEach((value, index ,array) => {
-    if (index > 0)
-      value.prev = array[index - 1]
-    value.extra = {}
-    charts.forEach((handler)=>{
-      handler.chartIndex?.setData(value)
+  if(rawData.current != props.data){
+    props.data.forEach((value, index ,array) => {
+      if (index > 0)
+        value.prev = array[index - 1]
+      value.extra = {}
+      charts.forEach((handler)=>{
+        handler.chartIndex?.setData(value, handler)
+      })
     })
-  })
-  const candles = props.data.slice(props.slice[0], props.slice[1]);
+    rawData.current = props.data
+  }
+  const candles = props.data.slice(-1 -candleCount -shift, -1 -shift);
   const caliber = candles.length?(width / candles.length):0
   charts.forEach((chart)=>{chart.aggregate = {values:[], zValues:[], domain:[0, 0]}});
   candles.forEach((value, index)=>{
@@ -102,37 +60,9 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
     if(handler.chartIndex && aggregate){
       handler.chartIndex?.setDomains(aggregate)
     }
-   })
-  /*
-  candles.forEach((value) => {
-    // multi dot avgstd
-    for(let i = 0; i < multiDotDepth; i++){
-      const all = []
-      let prev = value
-      for(let j = 0; j < multiDotSubDepth; j++){
-        all.push((prev.extra?.multiDot)?prev.extra.multiDot[i].value:0)
-        prev = prev.prev || prev
-      }
-      if(value.extra?.multiDot){
-        const [avg, std] = avgstd(all)
-        value.extra.multiDot[i].avg = avg
-        value.extra.multiDot[i].std = std
-      }
-    }
-  })*/
+  })
   const candleRef = React.useRef<(candle:Candle)=>void>((candle)=>{})
-  /*
-  const [multiDotValues, multiDotVolumes, multiDotAvgs, multiDotStds, tddValues] = candles.reduce((prev ,curr)=>{
-    curr.extra?.multiDot?.forEach((v)=>{
-      prev[0].push(v.value)
-      prev[1].push(v.volume)
-      if(v.avg) prev[2].push(v.avg)
-      if(v.std) prev[3].push(v.std)
-    })
-    if(curr.extra?.dd)prev[4].push(curr.extra?.dd)
-    if(curr.extra?.tdd)prev[4].push(curr.extra?.tdd)
-    return prev
-  }, [[], [], [], [], []] as [number[], number[], number[], number[], number[]])*/
+  const shiftRef = React.useRef<(shift:number)=>void>((shift)=>{setShift(shift); props.sizeRef?.current(shift, candleCount)})
   candleRef.current = (candle)=>{}
   return (
     <View style={{width:props.width}}>
@@ -149,9 +79,9 @@ export default (props:{data:Candle[], slice:[number, number], width:number}) => 
         ):(
           <View style={[styles.container, {minHeight:chartHandler.height}]} key={index}/>
         ))}
-        <Handler caliber={caliber} candles={candles} width={width} charts={charts} candleRef={candleRef} rightWidth={rightWidth}/>
+        <Handler caliber={caliber} candles={candles} width={width} charts={charts} candleRef={candleRef} shiftRef={shiftRef} rightWidth={rightWidth}/>
       </View>
-      {/*<Plot {...{ candles }} domain={chartHandlers[2].domain} size={[props.width, props.width * 0.75]} depth={multiDotDepth} subDepth={multiDotSubDepth}/>*/}
+        <Plot {...{ candles }} domain={charts[4].aggregate?.domain||[0, 0]} size={[props.width, props.width * 0.75]} depth={charts[4].extra?.mpt1?.include?.length} subDepth={charts[4].extra?.mpt1?.subDepth}/>
       <Side candleSetter={(setter)=>{candleRef.current = setter}}/>
     </View>
   );

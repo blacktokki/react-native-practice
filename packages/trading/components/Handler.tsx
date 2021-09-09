@@ -38,6 +38,9 @@ export default function Handler(props:HandlerProps){
     const [labelX, setLabelX] = React.useState(0)
     const [labelY, setLabelY] = React.useState(0)
     const [labelState, setLabelState] = React.useState<State>(State.UNDETERMINED)
+    const [mode, setMode] = React.useState(true)
+    const [labelLeft, setLabelLeft] = React.useState(0)
+    const [fixLeft, setfixLeft] = React.useState(0)
     const currentY = React.useMemo(()=>props.charts.reduce((prev, cur)=>{ return [prev[0] + cur.height, prev[0]<=labelY?prev[1]+1:Math.max(prev[1],0), prev[0]<=labelY?prev[0]:prev[2]]}, [0, -1, 0]), [labelY])
     let [totalY, indexY, minY] = currentY
     const delay = React.useRef({check:0, count:0})
@@ -54,20 +57,37 @@ export default function Handler(props:HandlerProps){
     let chartY = props.charts[indexY].aggregate || {domain:[0, 0]}
     let valueY = Math.floor((chartY.domain[1] + (chartY.domain[0] - chartY.domain[1])* Math.min(Math.max(0, (labelY-minY)/props.charts[indexY].height), 1)) *100)/100
     useEffect(()=>{props.candleRef?.current(candleX)}, [candleX])
+    useEffect(()=>{props.shiftRef?.current(labelLeft)}, [labelLeft])
     delay.current = {check:0, count:0}
     return (
-    <PanGestureHandler minDist={0} onGestureEvent={(e)=>{
+    <PanGestureHandler minDist={1} onGestureEvent={(e)=>{
+      if (!mode){ 
+        if (e.nativeEvent.state === State.ACTIVE)
+          setLabelLeft(Math.max(fixLeft + Math.floor(e.nativeEvent.translationX/props.caliber), 0))
+        if(e.nativeEvent.state === State.END)
+          setfixLeft(labelLeft)
+      }
       if (delay.current.check==0){
         delay.current.check=1
-        onGestureEvent(e)
+        if(mode){
+          onGestureEvent(e)
+        }
       }
       delay.current.count= (delay.current.count + 1)
       if (delay.current.count >= 12)
         delay.current = {check:0, count:0}
     }}
     >
-      <TapGestureHandler onGestureEvent={onGestureEvent}>
+      <TapGestureHandler onGestureEvent={(e)=>{
+        if(e.nativeEvent.state=== State.END){
+          if (Math.abs((e.nativeEvent.x - labelX) * (e.nativeEvent.y - labelY))<1 || !mode)
+            setMode(!mode)
+          onGestureEvent(e)
+        }
+      }}>
       <Animated.View style={[StyleSheet.absoluteFill]}>
+      {mode?(
+      <>
       <Animated.View
           style={{
             transform: [{ translateY }],
@@ -75,24 +95,26 @@ export default function Handler(props:HandlerProps){
             flexDirection:'row',
             ...StyleSheet.absoluteFillObject,
           }}
-        >
+      >
           <LineHandler x={props.width} y={0} />
           <Animated.View style={{backgroundColor:'white', height:20, top:-10, paddingRight:5}}>
             <Animated.Text style={{textAlign:'right', alignSelf: 'stretch', fontSize:10}}>{numberWithCommas(valueY)}</Animated.Text>
           </Animated.View>
-        </Animated.View>
-        <Animated.View
+      </Animated.View>
+      <Animated.View
           style={{
             transform: [{ translateX }],
             opacity,
             ...StyleSheet.absoluteFillObject,
           }}
-        >
+      >
           <LineHandler x={0} y={totalY} />
           <Animated.View style={{backgroundColor:'white', width:100, left:-40}}>
             <Animated.Text>{candleX?.date}</Animated.Text>
           </Animated.View>
-        </Animated.View>
+      </Animated.View>
+      </>
+      ):undefined}
       </Animated.View>
       </TapGestureHandler>
     </PanGestureHandler>

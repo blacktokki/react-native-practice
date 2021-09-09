@@ -26,7 +26,7 @@ export default function TabMainScreen({
     >
       <SliderSection renderText={(text)=>{return cdf(parseFloat(text) || 0.0).toString()}}/>
       <SliderSection renderText={(text)=>{return laplace_cdf(parseFloat(text) || 0.0).toString()}}/>
-      <CoinBasePro data={(require('../components/dummydata.json') as any[]).map((value)=>{value.volume=0; return value})} slice={[0, 20]} width={Dimensions.get("window").width*0.8}/>
+      <CoinBasePro data={(require('../components/dummydata.json') as any[]).map((value)=>{value.volume=0; return value})} width={Dimensions.get("window").width*0.8}/>
       <SectionDummy
           title='Tab Two'
           pressText1='Go 1 screen!'

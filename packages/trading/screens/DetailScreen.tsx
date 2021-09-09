@@ -35,7 +35,7 @@ export default function TabDetailScreen({
     return (
     <ScrollView>
         <Text>{fullCode}</Text>
-        <CoinBasePro data={CoinData} slice={[-1 -20, -1]} width={window.width}/>
+        <CoinBasePro data={CoinData} width={window.width}/>
         {Platform.OS == 'android' && shortCode && Linking.canOpenURL(stockPlusUrl)?(
             <Button title={shortCode} onPress={()=>{Linking.openURL(stockPlusUrl)}}></Button>
         ):undefined}

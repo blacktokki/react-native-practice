@@ -16,8 +16,8 @@ interface ChartProps {
   candles: CandleModel[];
   domain: [number, number];
   size: [number, number];
-  depth: number,
-  subDepth: number
+  depth?: number,
+  subDepth?: number
 }
 
 const Dot = ({id, x, y, r, fill, px, py }: any) => {
@@ -48,8 +48,8 @@ export default ({ candles, domain, size, depth, subDepth }: ChartProps) => {
       return {fill, avg:0, std:0}
     const arr:number[] = []
     let _candle = candle
-    for(let i=0; i<subDepth; i++){
-      const multiDot = _candle.extra?.multiDot
+    for(let i=0; i<(subDepth || 20); i++){
+      const multiDot = _candle.extra?.mpt1?.mpts
       if (multiDot){
         fill = multiDot[v].fill
         arr.push(multiDot[v].value)
