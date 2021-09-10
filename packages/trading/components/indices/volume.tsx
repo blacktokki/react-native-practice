@@ -4,7 +4,13 @@ import { CandleProps, IndexType } from "../CandleType"
 
 const MARGIN = 1;
 
-const Bar = ({ candle, index, width, scaleY, scaleBody }: CandleProps) => {
+type CandleConfig = {
+  volume?:{
+    volumeUp: boolean;
+  }
+}
+
+const Bar = ({ candle, index, width, scaleY, scaleBody }: CandleProps<CandleConfig>) => {
   const { volume } = candle;
   const volumeUp = candle.extra?.volume?.volumeUp
   const fill = volumeUp ? "#E33F64" : "#4A9AFA";
@@ -39,4 +45,4 @@ export default {
     setDomains: (values)=>{
       values.domain = values.values.length?[Math.min(...values.values, 0), Math.max(...values.values)]:[0, 0]
     }
-} as IndexType
+} as IndexType<{}, CandleConfig>

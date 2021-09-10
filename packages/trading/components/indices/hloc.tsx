@@ -5,14 +5,56 @@ import { CandleProps, IndexType } from "../CandleType"
 
 const MARGIN = 1;
 
-const Candle = ({ candle, index, width, scaleY, scaleBody }: CandleProps) => {
+const Bollinger = (props:any)=>{// x + width element prev
+  return (<>
+      <Line
+        x1={props.x + props.width}
+        y1={props.scaleY(props.element.high)}
+        x2={props.x}
+        y2={props.scaleY(props.prev.high)}
+        stroke={props.element.fill}
+        strokeWidth={2}
+      />
+      <Line
+        x1={props.x + props.width}
+        y1={props.scaleY(props.element.mid)}
+        x2={props.x}
+        y2={props.scaleY(props.prev.mid)}
+        stroke={props.element.fill}
+        strokeWidth={2}
+      />
+      <Line
+        x1={props.x + props.width}
+        y1={props.scaleY(props.element.low)}
+        x2={props.x}
+        y2={props.scaleY(props.prev.low)}
+        stroke={props.element.fill}
+        strokeWidth={2}
+      />
+    </>
+  )
+}
+type CandleConfig = {
+  hloc?:{
+    up: boolean;
+    bollingers?: {
+        high:number,
+        mid:number,
+        low:number,
+        fill:string
+    }[]
+  }
+}
+
+const Candle = ({ candle, index, width, scaleY, scaleBody }: CandleProps<CandleConfig>) => {
   const { close, open, high, low } = candle;
   const up = candle.extra?.hloc?.up;
   const fill = up ? "#E33F64" : "#4A9AFA";
   const x = index * width;
   const max = Math.max(open, close);
   const min = Math.min(open, close);
-  const margin = Math.min(MARGIN, width*0.25) 
+  const margin = Math.min(MARGIN, width*0.25)
+  const prev = candle.prev?.extra?.hloc?.bollingers
   return (
     <>
       <Line
@@ -41,26 +83,70 @@ const Candle = ({ candle, index, width, scaleY, scaleBody }: CandleProps) => {
         {...{ fill }}
       />
       )}
+      {(candle.extra?.hloc?.bollingers&& prev)?(
+        candle.extra?.hloc?.bollingers.map((element, index)=>{
+          return(
+            <Bollinger
+              key={index}
+              x={x}
+              width={width}
+              element={element}
+              prev={prev[index]}
+              scaleY={scaleY}
+            />
+          )
+        })
+      ):undefined}
     </>
   );
 };
 
+type Config = {
+  bollingers?: {
+    exp:number
+    count:number
+    fill:string
+  }[]
+}
+
 export default {
     CandleComponent: Candle,
-    setData: (candle)=>{
+    setData: (candle, config)=>{
       let hlocUp;
       if (candle.open==candle.close)
         hlocUp = candle.prev?((candle.prev.close==candle.open && candle.prev.extra?.hloc)?candle.prev.extra.hloc.up:(candle.prev.close<candle.open)):true
       else
         hlocUp = candle.open < candle.close
-      if (candle.extra)
+      if (candle.extra){
         candle.extra.hloc = {up: hlocUp}
+        if(config && config.bollingers){
+          const bollingers:(typeof candle.extra.hloc.bollingers) = []
+          let prev = candle
+          let sum = 0, sumExp = 0, i =0
+          config.bollingers.forEach((conf)=>{
+            while(i < conf.count){
+              sum += prev.close
+              sumExp += prev.close * prev.close
+              prev = prev.prev || prev
+              i++
+            }
+            const avg = sum/conf.count
+            const std =  Math.sqrt(sumExp/conf.count - avg * avg)
+            bollingers.push({high:avg + conf.exp * std, low:avg - conf.exp * std, mid:avg, fill:conf.fill})
+          })
+          candle.extra.hloc.bollingers = bollingers
+        }
+      }
     },
     setValues: (prev, candle) =>{
       prev.values.push(candle.low)
       prev.values.push(candle.high)
+      candle.extra?.hloc?.bollingers?.forEach((value=>{
+        prev.values.push(value.low)
+        prev.values.push(value.high)
+      }))
     },
     setDomains: (values)=>{
       values.domain = values.values.length?[Math.min(...values.values), Math.max(...values.values)]:[0, 0]
     }
-} as IndexType
+} as IndexType<Config, CandleConfig>

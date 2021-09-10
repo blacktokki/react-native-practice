@@ -1,6 +1,6 @@
 import React from "react";
 import { Circle } from "react-native-svg";
-import { CandleProps, IndexType } from "../CandleType"
+import { Candle, CandleProps, IndexType } from "../CandleType"
 
 const Dot = ({ x, y, z, r, fill }: any) => {
     return (
@@ -13,7 +13,24 @@ const Dot = ({ x, y, z, r, fill }: any) => {
     );
   };
 
-const MultiDot = ({ candle, index, width, scaleY, scaleZ, scaleBody }: CandleProps) => {
+type CandleConfig = {
+  mpt1?:{
+    mpts:{
+        fill:string,
+        value:number,
+        // volume:number,
+        desc:string,
+        avg?:number,
+        avgExp?:number, 
+        std?:number,
+    }[],
+    _first:Candle<CandleConfig>,
+  }
+}
+
+export type Mpt1Candle = Candle<CandleConfig>
+
+const MultiDot = ({ candle, index, width, scaleY, scaleZ, scaleBody }: CandleProps<CandleConfig>) => {
   const x = index * width;
   return (
     <>
@@ -32,27 +49,32 @@ const MultiDot = ({ candle, index, width, scaleY, scaleZ, scaleBody }: CandlePro
   );
 };
 
+type Config = {
+  depth:number,
+  subDepth:number
+  include?:number[]
+}
+
 export default {
     CandleComponent: MultiDot,
-    setData: (candle, chart)=>{
-      const depth = chart.extra?.mpt1?.depth || 20;// 보유기한
-      const subDepth = chart.extra?.mpt1?.subDepth || 20;//계산일수
+    setData: (candle, config)=>{
+      const depth = config.depth // 보유기한
+      const subDepth = config.subDepth //계산일수
       if (candle.extra){
         let prev = candle
         for(let i = 0; i < subDepth; i++){
           prev = prev.prev || prev
         }
         candle.extra.mpt1 = {mpts:[], _first:prev}
+        
         prev = candle
         const prevMpts = candle.prev?.extra?.mpt1?.mpts
         const firstMpts = candle.extra.mpt1._first.extra?.mpt1?.mpts
         for(let i = 0; i < depth; i++){
-            if(!chart.extra?.mpt1?.include || chart.extra?.mpt1?.include.indexOf(i)>=0){
+            if(!config.include || config.include.indexOf(i)>=0){
               const value = (candle.close>0 && prev.open>0)?100 * (candle.close/prev.open -1):0
               const valueExp = value * value
               const i2 = candle.extra.mpt1.mpts.length
-              if(candle.prev===undefined)
-                console.log(i, i2)
               const avg = prevMpts&&firstMpts?(prevMpts[i2].avg || 0) - (firstMpts[i2].value - value) / subDepth:value
               const avgExp = prevMpts&&firstMpts?(prevMpts[i2].avgExp || 0) - (firstMpts[i2].value * firstMpts[i2].value - valueExp) / subDepth:valueExp
               candle.extra.mpt1.mpts.push({
@@ -80,4 +102,4 @@ export default {
       aggregate.zDomain = [Math.min(...aggregate.zValues, 0), Math.max(...aggregate.zValues, 0)]
     },
     getVerticals: ()=>[0]
-} as IndexType
+} as IndexType<Config, CandleConfig>

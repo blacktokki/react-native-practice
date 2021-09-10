@@ -64,8 +64,6 @@ export default function Handler(props:HandlerProps){
       if (!mode){ 
         if (e.nativeEvent.state === State.ACTIVE)
           setLabelLeft(Math.max(fixLeft + Math.floor(e.nativeEvent.translationX/props.caliber), 0))
-        if(e.nativeEvent.state === State.END)
-          setfixLeft(labelLeft)
       }
       if (delay.current.check==0){
         delay.current.check=1
@@ -77,11 +75,16 @@ export default function Handler(props:HandlerProps){
       if (delay.current.count >= 12)
         delay.current = {check:0, count:0}
     }}
+    onEnded={(e)=>{
+      if(!mode)
+          setfixLeft(labelLeft)
+    }}
     >
-      <TapGestureHandler onGestureEvent={(e)=>{
-        if(e.nativeEvent.state=== State.END){
-          if (Math.abs((e.nativeEvent.x - labelX) * (e.nativeEvent.y - labelY))<1 || !mode)
+      <TapGestureHandler onHandlerStateChange={(e)=>{
+        if(e.nativeEvent.state === State.ACTIVE){
+          if(Math.abs((e.nativeEvent.x - labelX) * (e.nativeEvent.y - labelY))<props.width * props.width / 2500 || !mode){
             setMode(!mode)
+          }
           onGestureEvent(e)
         }
       }}>

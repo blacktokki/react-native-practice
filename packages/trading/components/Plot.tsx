@@ -2,6 +2,7 @@ import React from "react";
 import { Svg, Text } from "react-native-svg";
 import { scaleLinear } from "d3-scale";
 import { Candle as CandleModel } from "./CandleType"
+import { Mpt1Candle } from "./indices/mpt1";
 import { Circle, Line } from "react-native-svg";
 
 function avgstd(array:number[]) {
@@ -13,7 +14,7 @@ function avgstd(array:number[]) {
   }
 
 interface ChartProps {
-  candles: CandleModel[];
+  candles: Mpt1Candle[];
   domain: [number, number];
   size: [number, number];
   depth?: number,

@@ -2,7 +2,14 @@ import React from "react";
 import { Line } from "react-native-svg";
 import { CandleProps, IndexType } from "../CandleType"
 
-const LineDot = ({ candle, index, width, scaleY, scaleZ, scaleBody }: CandleProps) => {
+type CandleConfig = {
+  tdd?:{
+    dd:number,
+    tdd:number
+  }
+}
+
+const LineDot = ({ candle, index, width, scaleY, scaleZ, scaleBody }: CandleProps<CandleConfig>) => {
   const x = index * width + width * 0.5;
   const y = scaleY(candle.extra?.tdd?.dd || 0)
   const px = x - width
@@ -29,10 +36,14 @@ const LineDot = ({ candle, index, width, scaleY, scaleZ, scaleBody }: CandleProp
   );
 };
 
+type Config = {
+  depth:number
+}
+
 export default {
     CandleComponent: LineDot,
-    setData: (candle, chart)=>{
-      const tddDepth = chart.extra?.tdd?.depth || 252
+    setData: (candle, config)=>{
+      const tddDepth = config.depth
       if (candle.extra){
         candle.extra.tdd = {dd:0, tdd:0}
         let prev = candle
@@ -63,4 +74,4 @@ export default {
       values.domain = [Math.min(...values.values, 0)-0.05, 0.05]
     },
     getVerticals: ()=>[0]
-} as IndexType
+} as IndexType<Config, CandleConfig>

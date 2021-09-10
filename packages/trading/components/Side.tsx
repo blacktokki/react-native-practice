@@ -4,8 +4,8 @@ import Animated from "react-native-reanimated";
 import { numberWithCommas } from "./Handler"
 import { Candle } from "./CandleType"
 
-export default function Side(props:{candleSetter:(setter:(candle:Candle)=>void)=>void}){
-    const [candle, setCandle] = React.useState<Candle>()
+export default function Side(props:{candleSetter:(setter:(candle:Candle<{}>)=>void)=>void}){
+    const [candle, setCandle] = React.useState<Candle<{}>>()
     props.candleSetter(setCandle)
     return(<Animated.View
       style={{

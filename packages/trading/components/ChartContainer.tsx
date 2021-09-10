@@ -4,11 +4,12 @@ import { StyleSheet, View } from "react-native";
 import Chart from "./Chart";
 import Handler from  "./Handler"
 import Side from "./Side"
-import { Candle, Chart as ChartType } from "./CandleType"
+import { Candle, Chart as ChartType, AsConfig } from "./CandleType"
 import hloc from "./indices/hloc";
 import volume from "./indices/volume";
-import mpt1 from "./indices/mpt1";
+import mpt1, {Mpt1Candle} from "./indices/mpt1";
 import tdd from "./indices/tdd";
+import mfi from "./indices/mfi";
 import Plot from "./Plot"
 
 const styles = StyleSheet.create({
@@ -18,20 +19,28 @@ const styles = StyleSheet.create({
 });
 
 
-export default (props:{data:Candle[], width:number, sizeRef?:React.MutableRefObject<(shift: number, candleCount:number) => void>}) => {
+export default (props:{data:Candle<{}>[], width:number, sizeRef?:React.MutableRefObject<(shift: number, candleCount:number) => void>}) => {
   const [shift, setShift] = React.useState(0)
   const rawData = React.useRef(props.data)
   const rightWidth = 50
   const width = props.width - rightWidth
   const candleCount = 20
-  const charts:ChartType[] = [
-    {height: width / 4, chartIndex:hloc},
+  const charts:ChartType<
+    AsConfig<typeof hloc> |
+    AsConfig<typeof volume> |
+    AsConfig<typeof mpt1> |
+    AsConfig<typeof tdd> | 
+    AsConfig<typeof mfi>
+  >[] = [
+    {height: width / 4, chartIndex:hloc, config:{bollingers:[{fill:'green', count:20, exp:2}]}},
     {height: width / 16},
     {height: width / 8, chartIndex:volume},
     {height: width / 16},
-    {height: width / 8, chartIndex:mpt1, extra:{mpt1:{depth:20, subDepth:20, include:[0,4,9,14,19]}}},
+    {height: width / 8, chartIndex:mpt1, config:{depth:20, subDepth:20, include:[0,4,9,14,19]}},
     {height: width / 16},
-    {height: width / 8, chartIndex:tdd, extra:{tdd:{depth:252}}},
+    {height: width / 8, chartIndex:tdd, config:{depth:252}},
+    {height: width / 16},
+    {height: width / 8, chartIndex:mfi, config:{depth:20}},
   ]
   if(rawData.current != props.data){
     props.data.forEach((value, index ,array) => {
@@ -39,7 +48,7 @@ export default (props:{data:Candle[], width:number, sizeRef?:React.MutableRefObj
         value.prev = array[index - 1]
       value.extra = {}
       charts.forEach((handler)=>{
-        handler.chartIndex?.setData(value, handler)
+        handler.chartIndex?.setData(value, handler.config)
       })
     })
     rawData.current = props.data
@@ -61,8 +70,9 @@ export default (props:{data:Candle[], width:number, sizeRef?:React.MutableRefObj
       handler.chartIndex?.setDomains(aggregate)
     }
   })
-  const candleRef = React.useRef<(candle:Candle)=>void>((candle)=>{})
+  const candleRef = React.useRef<(candle:Candle<{}>)=>void>((candle)=>{})
   const shiftRef = React.useRef<(shift:number)=>void>((shift)=>{setShift(shift); props.sizeRef?.current(shift, candleCount)})
+  const plocConfig = charts[4].config as AsConfig<typeof mpt1>
   candleRef.current = (candle)=>{}
   return (
     <View style={{width:props.width}}>
@@ -81,7 +91,7 @@ export default (props:{data:Candle[], width:number, sizeRef?:React.MutableRefObj
         ))}
         <Handler caliber={caliber} candles={candles} width={width} charts={charts} candleRef={candleRef} shiftRef={shiftRef} rightWidth={rightWidth}/>
       </View>
-        <Plot {...{ candles }} domain={charts[4].aggregate?.domain||[0, 0]} size={[props.width, props.width * 0.75]} depth={charts[4].extra?.mpt1?.include?.length} subDepth={charts[4].extra?.mpt1?.subDepth}/>
+        <Plot candles={candles as Mpt1Candle[]} domain={charts[4].aggregate?.domain||[0, 0]} size={[props.width, props.width * 0.75]} depth={plocConfig.include?.length} subDepth={plocConfig.subDepth}/>
       <Side candleSetter={(setter)=>{candleRef.current = setter}}/>
     </View>
   );
