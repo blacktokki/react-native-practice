@@ -18,9 +18,9 @@ export function numberWithCommas(x?:number) {
   }
 
   
-const LineHandler = ({ x, y }: { x: number, y: number;}) => {
+const LineHandler = ({ x, y, width, height }: { x: number, y: number; width:number, height:number}) => {
     return (
-      <Svg height='100%' width='100%'>
+      <Svg height={height} width={width}>
         <Line
           x1={0}
           y1={0}
@@ -93,25 +93,28 @@ export default function Handler(props:HandlerProps){
       <>
       <Animated.View
           style={{
+            width:props.width + props.rightWidth,
+            height:20,
             transform: [{ translateY }],
             opacity,
             flexDirection:'row',
             ...StyleSheet.absoluteFillObject,
           }}
       >
-          <LineHandler x={props.width} y={0} />
+          <LineHandler x={props.width} y={0} width={props.width} height={20}/>
           <Animated.View style={{backgroundColor:'white', height:20, top:-10, paddingRight:5}}>
-            <Animated.Text style={{textAlign:'right', alignSelf: 'stretch', fontSize:10}}>{numberWithCommas(valueY)}</Animated.Text>
+            <Animated.Text style={{alignSelf: 'stretch', fontSize:10}}>{numberWithCommas(valueY)}</Animated.Text>
           </Animated.View>
       </Animated.View>
       <Animated.View
           style={{
+            height:totalY + 20,
             transform: [{ translateX }],
             opacity,
             ...StyleSheet.absoluteFillObject,
           }}
       >
-          <LineHandler x={0} y={totalY} />
+          <LineHandler x={0} y={totalY} width={props.width} height={totalY}/>
           <Animated.View style={{backgroundColor:'white', width:100, left:-40}}>
             <Animated.Text>{candleX?.date}</Animated.Text>
           </Animated.View>

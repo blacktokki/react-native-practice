@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Platform } from "react-native";
 
 import Chart from "./Chart";
 import Handler from  "./Handler"
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
 export default (props:{data:Candle<{}>[], width:number, sizeRef?:React.MutableRefObject<(shift: number, candleCount:number) => void>}) => {
   const [shift, setShift] = React.useState(0)
   const rawData = React.useRef(props.data)
-  const rightWidth = 50
+  const rightWidth = Platform.OS=='web'?60:50
   const width = props.width - rightWidth
   const candleCount = 20
   const charts:ChartType<

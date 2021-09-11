@@ -4,12 +4,16 @@ import {load_json, save_json, exists_file, init_folder} from './jsonio'
 import {request_company, request_company_list } from './requestutil'
 import { CompanyResponse } from '../types'
 import { compressModel, decompressModel } from './compress'
+import { e } from 'mathjs'
 
 export const INDEX_STOCK = ['ARIRANG', 'HANARO', 'KBSTAR', 'KINDEX', 'KODEX', 'TIGER', 'KOSEF', 'SMART', 'TREX']
 export const FILE_SPLIT = 10
 export const TRDVAL_DAYS = 20
 export const MIN_TRDVAL = 2000000000
 export const REPORT_OFFSET2 = 0.5
+export const STORAGE_KEY = {
+    'last_date': 'RNP_LAST_DATE'
+}
 
 export function sleep(ms:number){
     return new Promise((r) => setTimeout(r, ms));
@@ -25,9 +29,19 @@ export async function load_stocklist_json(){
         var j = await request_company_list() as any
         save_json(j, _path)
     //filtering stock!
-    return ((j as any)['block1'] as any[]).filter((d) =>{
+    const data_all = ((j as any)['block1'] as any[]).filter((d) =>{
         return ['KSQ', 'STK'].indexOf(d['marketCode']) >= 0 && d['full_code'][2] == '7' && (d['full_code'] as string).substring(8, 11) == '000' && (d['codeName'] as string).search('스팩') < 0 && ! is_index_stock(d['codeName'])
-    }   )
+    })
+    const _path2 = path.join('data', 'last_date.json')
+    if (await exists_file(_path2)){
+        const last_dates = await load_json(_path2)
+        data_all.forEach((d)=>{
+            d['lastDate'] = last_dates[d['full_code']]
+        })
+    }
+    else
+        save_json({}, _path2)
+    return data_all
 }
 
 const default_date = {
@@ -80,6 +94,15 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
             j2['_status'] = 1
     }
     return j2
+}
+
+export async function save_last_date(data_all:any[]){
+    const last_dates:any = {}
+    data_all.forEach((d)=>{
+        last_dates[d['full_code']] = d['lastDate']
+    })
+    const _path2 = path.join('data', 'last_date.json')
+    await save_json(last_dates, _path2)
 }
 
 export function is_index_stock(codename:string){
