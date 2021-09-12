@@ -1,8 +1,9 @@
 import React from "react";
 import { Svg, Text } from "react-native-svg";
 import { scaleLinear } from "d3-scale";
-import { Candle as CandleModel } from "./CandleType"
-import { Mpt1Candle } from "./indices/mpt1";
+import { Candle as CandleModel, AsCandleConfig } from "./CandleType"
+import mpt1 from "./indices/mpt1";
+import bolmfi from "./indices/bolmfi";
 import { Circle, Line } from "react-native-svg";
 
 function avgstd(array:number[]) {
@@ -14,36 +15,35 @@ function avgstd(array:number[]) {
   }
 
 interface ChartProps {
-  candles: Mpt1Candle[];
-  domain: [number, number];
+  candles: CandleModel<AsCandleConfig<typeof mpt1> & AsCandleConfig<typeof bolmfi>>[];
   size: [number, number];
-  depth?: number,
   subDepth?: number
 }
 
-const Dot = ({id, x, y, r, fill, px, py }: any) => {
+const Dot = ({id, x, y, r, px, py, d }: any) => {
     return (
         <>
           <Circle
             cx={x}
             cy={y}
             r={r}
-            {...{ fill }}
+            fill={d.fill}
           />
           {(px && py)?(<Line
              x1={x} x2={px} y1={y} y2={py} stroke={"black"} strokeWidth={1}
           />):undefined}
-          <Text x={x} y={y} fill="black">{id}</Text>
+          <Text x={x} y={y} fill="black">{d.detail?(id + "(" + d.avg.toFixed(4) + ", " + d.std.toFixed(4) + ')'):id}</Text>
         </>
     );
   };
 
-type DataType = {fill:string, avg:number, std:number, prev?:DataType}
+type DataType = {fill:string, avg:number, std:number, prev?:DataType, detail?:boolean}
 
-export default ({ candles, domain, size, depth, subDepth }: ChartProps) => {
+export default ({ candles, size, subDepth }: ChartProps) => {
   const candle = candles[candles.length-1]
+  const depth = candle?(candle.extra?.mpt1?.mpts.length||0):0
   let prev:DataType|undefined = undefined
-  const data:DataType[] = [...Array(depth).keys()].map((v)=>{
+  const data:DataType[] = candle?[...Array(depth).keys()].map((v)=>{
     let fill = ''
     if (candles.length == 0)
       return {fill, avg:0, std:0}
@@ -60,13 +60,17 @@ export default ({ candles, domain, size, depth, subDepth }: ChartProps) => {
       _candle = _candle.prev || _candle
     }
     const [avg, std] = avgstd(arr)
-    prev = {fill, avg, std:std, prev}
+    prev = {fill, avg, std:std, prev, detail:(v==depth-1||v==0)}
     return prev
-  })
+  }):[]
+  if (candle && candle.extra?.bolmfi?.avg && candle.extra?.bolmfi?.std)
+    data.push({fill:'orange', avg:candle.extra.bolmfi.avg, std:candle.extra.bolmfi.std, detail:true})
   const avgOnly = data.map((v)=>v.avg)
   const stdOnly = data.map((v)=>v.std)
-  const scaleX = scaleLinear().domain([Math.min(...stdOnly, 0) -1, Math.max(...stdOnly, 0) + 1]).range([0, size[0]]);
-  const scaleY = scaleLinear().domain([Math.min(...avgOnly, 0) -1, Math.max(...avgOnly, 0) + 1]).range([size[1], 0]);
+  const scaleX = scaleLinear().domain([Math.min(...stdOnly, ...avgOnly, 0) -1, Math.max(...stdOnly, ...avgOnly, 0) + 1]).range([0, size[0]]);
+  const scaleY = scaleLinear().domain([Math.min(...stdOnly, ...avgOnly, 0) -1, Math.max(...stdOnly, ...avgOnly, 0) + 1]).range([size[1], 0])
+  //const scaleX = scaleLinear().domain([Math.min(...stdOnly, 0) -1, Math.max(...stdOnly, 0) + 1]).range([0, size[0]]);
+  //const scaleY = scaleLinear().domain([Math.min(...avgOnly, 0) -1, Math.max(...avgOnly, 0) + 1]).range([size[1], 0]);
   return (
     <Svg width={size[0]} height={size[1]}>
       {data.map((d, i)=>{
@@ -78,12 +82,12 @@ export default ({ candles, domain, size, depth, subDepth }: ChartProps) => {
         return (<Dot
             key={i}
             id={i}
-            {...{ x, y ,r, px, py}}
-            fill={d.fill}
+            {...{ x, y ,r, px, py, d}}
         />);}
       )}
         <Line x1={0} x2={size[0]} y1={scaleY(0)} y2={scaleY(0)} stroke={"red"} strokeWidth={1}/>
         <Line x1={scaleX(0)} x2={scaleX(0)} y1={0} y2={size[1]} stroke={"red"} strokeWidth={1}/>
+        <Line x1={0} x2={size[0]} y1={size[1]} y2={0} stroke={"red"} strokeWidth={1}/>
     </Svg>
   );
 };

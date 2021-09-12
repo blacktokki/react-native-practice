@@ -13,7 +13,7 @@ const Dot = ({ x, y, z, r, fill }: any) => {
     );
   };
 
-type CandleConfig = {
+type Mpt1CandleConfig = {
   mpt1?:{
     mpts:{
         fill:string,
@@ -24,13 +24,11 @@ type CandleConfig = {
         avgExp?:number, 
         std?:number,
     }[],
-    _first:Candle<CandleConfig>,
+    _first:Candle<Mpt1CandleConfig>,
   }
 }
 
-export type Mpt1Candle = Candle<CandleConfig>
-
-const MultiDot = ({ candle, index, width, scaleY, scaleZ, scaleBody }: CandleProps<CandleConfig>) => {
+const MultiDot = ({ candle, index, width, scaleY, scaleZ, scaleBody }: CandleProps<Mpt1CandleConfig>) => {
   const x = index * width;
   return (
     <>
@@ -102,4 +100,4 @@ export default {
       aggregate.zDomain = [Math.min(...aggregate.zValues, 0), Math.max(...aggregate.zValues, 0)]
     },
     getVerticals: ()=>[0]
-} as IndexType<Config, CandleConfig>
+} as IndexType<Config, Mpt1CandleConfig>

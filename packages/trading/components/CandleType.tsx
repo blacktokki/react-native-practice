@@ -57,4 +57,5 @@ export type HandlerProps = CommonProps & {
   shiftRef: React.MutableRefObject<(shift: number) => void>
 }
 
-export type AsConfig<Type> = Type extends IndexType<infer T, infer C> ? T : never
+export type AsChartConfig<Type> = Type extends IndexType<infer T, infer C> ? T : never
+export type AsCandleConfig<Type> = Type extends IndexType<infer T, infer C> ? C : never

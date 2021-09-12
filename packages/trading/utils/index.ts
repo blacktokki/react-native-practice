@@ -4,7 +4,6 @@ import {load_json, save_json, exists_file, init_folder} from './jsonio'
 import {request_company, request_company_list } from './requestutil'
 import { CompanyResponse } from '../types'
 import { compressModel, decompressModel } from './compress'
-import { e } from 'mathjs'
 
 export const INDEX_STOCK = ['ARIRANG', 'HANARO', 'KBSTAR', 'KINDEX', 'KODEX', 'TIGER', 'KOSEF', 'SMART', 'TREX']
 export const FILE_SPLIT = 10

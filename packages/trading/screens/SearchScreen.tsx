@@ -85,9 +85,8 @@ export default function TabSearchScreen({
   const [keyword, setKeyword] = React.useState('')
   const [lastDate, setLastDate] = React.useState<Date>(new Date())
   const syncLength = React.useMemo(()=>{
-    const dateString = ddFormat(lastDate)
     return [
-      data.filter((item)=>(item['lastDate'] == dateString)).length, 
+      data.filter((item)=>(new Date(item['lastDate']) >= lastDate)).length, 
       data.filter((item)=>item['checked']).length,
       data.length
     ]
@@ -118,7 +117,6 @@ export default function TabSearchScreen({
       if (data.length == 0){
         load_stocklist_json().then(
           (data_all)=>{
-            const dateString = ddFormat(date)
             //limited data
             //data_all.splice(10)
             //console.log(data_all)
