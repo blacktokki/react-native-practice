@@ -3,10 +3,11 @@ import { Line } from "react-native-svg";
 import { Candle, CandleProps, IndexType, AsCandleConfig} from "../CandleType"
 import hloc from "./hloc";
 import mfi from "./mfi";
+import ii from "./ii"
 
 
-type CandleConfig = AsCandleConfig<typeof hloc> & AsCandleConfig<typeof mfi> & {
-    bolmfi?:{
+type CandleConfig = AsCandleConfig<typeof hloc> & AsCandleConfig<typeof mfi> & AsCandleConfig<typeof ii> & {
+    bolmfiii?:{
         hold?:number,
         value:number, //일간수익
         value2:number, //누적수익(1회분)
@@ -19,9 +20,9 @@ type CandleConfig = AsCandleConfig<typeof hloc> & AsCandleConfig<typeof mfi> & {
 
 const LineDot = ({ candle, index, width, scaleY, scaleZ, scaleBody }: CandleProps<CandleConfig>) => {
   const x = index * width + width * 0.5;
-  const y = scaleY(candle.extra?.bolmfi?.value2 || 0)
+  const y = scaleY(candle.extra?.bolmfiii?.value2 || 0)
   const px = x - width
-  const py = scaleY(candle.prev?.extra?.bolmfi?.value2 || 0)
+  const py = scaleY(candle.prev?.extra?.bolmfiii?.value2 || 0)
   return (
     <>
         <Line
@@ -29,7 +30,7 @@ const LineDot = ({ candle, index, width, scaleY, scaleZ, scaleBody }: CandleProp
             x2={px}
             y1={y}
             y2={py}
-            stroke={candle.prev?.extra?.bolmfi?.hold?"orange":"blue"} strokeWidth={3}
+            stroke={candle.prev?.extra?.bolmfiii?.hold?"orange":"blue"} strokeWidth={3}
         />
     </>
   );
@@ -43,37 +44,37 @@ type Config = {
 export default {
     CandleComponent: LineDot,
     setData: (candle, config)=>{
-        if (candle.extra?.hloc?.bollingers && candle.extra?.mfi){
+        if (candle.extra?.hloc?.bollingers && candle.extra?.mfi && candle.extra.ii){
             let prev2 = candle
             for(let i = 0; i < config.depth; i++){
               prev2 = prev2.prev || prev2
             }
-            candle.extra.bolmfi = {value:0, value2:0, _first:prev2}
+            candle.extra.bolmfiii = {value:0, value2:0, _first:prev2}
             const bolinger = candle.extra.hloc.bollingers[config.bolingerIndex]
             const pb = (candle.close - bolinger.low) / (bolinger.high - bolinger.low) * 100
-            const prevBMs = candle.prev?.extra?.bolmfi
-            const firstBMs = prev2.extra?.bolmfi
+            const prevBMs = candle.prev?.extra?.bolmfiii
+            const firstBMs = prev2.extra?.bolmfiii
             if (prevBMs?.hold){
-              candle.extra.bolmfi.hold = (pb < 20 && candle.extra.mfi.value < 20)?undefined:prevBMs.hold
-              candle.extra.bolmfi.value = candle.prev?(((candle.close/candle.prev.close) -1) * 100):0
-              candle.extra.bolmfi.value2 = candle.prev?(((candle.close/prevBMs.hold) -1) * 100):0
+              candle.extra.bolmfiii.hold = (pb < 20 && candle.extra.mfi.value < 20 || pb > 95 && candle.extra.ii.value < 0)?undefined:prevBMs.hold
+              candle.extra.bolmfiii.value = candle.prev?(((candle.close/candle.prev.close) -1) * 100):0
+              candle.extra.bolmfiii.value2 = candle.prev?(((candle.close/prevBMs.hold) -1) * 100):0
             }
             else{
-              candle.extra.bolmfi.hold = (pb > 80 && candle.extra.mfi.value > 80)?candle.close:undefined
-              candle.extra.bolmfi.value2 = 0
+              candle.extra.bolmfiii.hold = (pb > 80 && candle.extra.mfi.value > 80 || pb < 5 && candle.extra.ii.value > 0)?candle.close:undefined
+              candle.extra.bolmfiii.value2 = 0
             }
-            const value = candle.extra.bolmfi.value
+            const value = candle.extra.bolmfiii.value
             const valueExp = value * value
             const avg = prevBMs&&firstBMs?(prevBMs.avg || 0) - (firstBMs.value - value) / config.depth:value
             const avgExp = prevBMs&&firstBMs?(prevBMs.avgExp || 0) - (firstBMs.value * firstBMs.value - valueExp) / config.depth:valueExp
-            candle.extra.bolmfi.avg = avg
-            candle.extra.bolmfi.avgExp = avgExp
-            candle.extra.bolmfi.std = Math.sqrt(avgExp - avg * avg)
+            candle.extra.bolmfiii.avg = avg
+            candle.extra.bolmfiii.avgExp = avgExp
+            candle.extra.bolmfiii.std = Math.sqrt(avgExp - avg * avg)
         }
     },
     setValues: (prev, candle)=>{
-      if(candle.extra?.bolmfi){
-        prev.values.push(candle.extra.bolmfi.value2)
+      if(candle.extra?.bolmfiii){
+        prev.values.push(candle.extra.bolmfiii.value2)
       }
     },
     setDomains: (values)=>{

@@ -1,6 +1,7 @@
 import MainScreen from './MainScreen'
 import SearchScreen from './SearchScreen'
 import DetailScreen from './DetailScreen'
+import PortFolioScreen from './PortFolioScreen'
 export default {
     SearchScreen:{
         component: SearchScreen,
@@ -15,6 +16,11 @@ export default {
             exact:true,
         },
         params: {full_code: 'asd'}
+    },
+    PortFolioScreen:{
+        component: PortFolioScreen,
+        title: 'Tab PortFolio Title',
+        url: 'portfolio'
     },
     MainScreen:{
         component: MainScreen,

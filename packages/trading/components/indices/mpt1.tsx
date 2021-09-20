@@ -70,7 +70,7 @@ export default {
         const firstMpts = candle.extra.mpt1._first.extra?.mpt1?.mpts
         for(let i = 0; i < depth; i++){
             if(!config.include || config.include.indexOf(i)>=0){
-              const value = (candle.close>0 && prev.open>0)?100 * (candle.close/prev.open -1):0
+              const value = (candle.close>0 && prev.open>0)?100 * (Math.pow(candle.close/prev.open, 1/(i + 1)) - 1):0
               const valueExp = value * value
               const i2 = candle.extra.mpt1.mpts.length
               const avg = prevMpts&&firstMpts?(prevMpts[i2].avg || 0) - (firstMpts[i2].value - value) / subDepth:value

@@ -4,6 +4,8 @@ import { scaleLinear } from "d3-scale";
 import { Candle as CandleModel, AsCandleConfig } from "./CandleType"
 import mpt1 from "./indices/mpt1";
 import bolmfi from "./indices/bolmfi";
+import bolii from "./indices/bolii";
+// import bolmfiii from "./indices/bolmfiii";
 import { Circle, Line } from "react-native-svg";
 
 function avgstd(array:number[]) {
@@ -15,7 +17,12 @@ function avgstd(array:number[]) {
   }
 
 interface ChartProps {
-  candles: CandleModel<AsCandleConfig<typeof mpt1> & AsCandleConfig<typeof bolmfi>>[];
+  candles: CandleModel<
+  AsCandleConfig<typeof mpt1> & 
+  AsCandleConfig<typeof bolmfi> & 
+  AsCandleConfig<typeof bolii> // & 
+  // AsCandleConfig<typeof bolmfiii>
+  >[];
   size: [number, number];
   subDepth?: number
 }
@@ -32,7 +39,7 @@ const Dot = ({id, x, y, r, px, py, d }: any) => {
           {(px && py)?(<Line
              x1={x} x2={px} y1={y} y2={py} stroke={"black"} strokeWidth={1}
           />):undefined}
-          <Text x={x} y={y} fill="black">{d.detail?(id + "(" + d.avg.toFixed(4) + ", " + d.std.toFixed(4) + ')'):id}</Text>
+          <Text x={x} y={y + (id%2?20:0)} fill="black">{d.detail?(id + "(" + d.avg.toFixed(4) + ", " + d.std.toFixed(4) + ')'):id}</Text>
         </>
     );
   };
@@ -65,10 +72,16 @@ export default ({ candles, size, subDepth }: ChartProps) => {
   }):[]
   if (candle && candle.extra?.bolmfi?.avg && candle.extra?.bolmfi?.std)
     data.push({fill:'orange', avg:candle.extra.bolmfi.avg, std:candle.extra.bolmfi.std, detail:true})
+  if (candle && candle.extra?.bolii?.avg && candle.extra?.bolii?.std)
+    data.push({fill:'orange', avg:candle.extra.bolii.avg, std:candle.extra.bolii.std, detail:true})
+  // if (candle && candle.extra?.bolmfiii?.avg && candle.extra?.bolmfiii?.std)
+  //  data.push({fill:'orange', avg:candle.extra.bolmfiii.avg, std:candle.extra.bolmfiii.std, detail:true})
   const avgOnly = data.map((v)=>v.avg)
   const stdOnly = data.map((v)=>v.std)
-  const scaleX = scaleLinear().domain([Math.min(...stdOnly, ...avgOnly, 0) -1, Math.max(...stdOnly, ...avgOnly, 0) + 1]).range([0, size[0]]);
-  const scaleY = scaleLinear().domain([Math.min(...stdOnly, ...avgOnly, 0) -1, Math.max(...stdOnly, ...avgOnly, 0) + 1]).range([size[1], 0])
+  const mins = data.length?Math.min(...stdOnly, ...avgOnly):0
+  const maxs = data.length?Math.max(...stdOnly, ...avgOnly):0
+  const scaleX = scaleLinear().domain([mins -0.5, maxs + 0.5]).range([0, size[0]]);
+  const scaleY = scaleLinear().domain([mins -0.5, maxs + 0.5]).range([size[1], 0])
   //const scaleX = scaleLinear().domain([Math.min(...stdOnly, 0) -1, Math.max(...stdOnly, 0) + 1]).range([0, size[0]]);
   //const scaleY = scaleLinear().domain([Math.min(...avgOnly, 0) -1, Math.max(...avgOnly, 0) + 1]).range([size[1], 0]);
   return (

@@ -11,6 +11,9 @@ import mpt1 from "./indices/mpt1";
 import tdd from "./indices/tdd";
 import mfi from "./indices/mfi";
 import bolmfi from "./indices/bolmfi";
+import ii from "./indices/ii";
+import bolii from "./indices/bolii";
+// import bolmfiii from "./indices/bolmfiii";
 import Plot from "./Plot"
 
 const styles = StyleSheet.create({
@@ -32,19 +35,28 @@ export default (props:{data:Candle<{}>[], width:number, sizeRef?:React.MutableRe
     AsChartConfig<typeof mpt1> |
     AsChartConfig<typeof tdd> | 
     AsChartConfig<typeof mfi> |
-    AsChartConfig<typeof bolmfi>
+    AsChartConfig<typeof bolmfi> | 
+    AsChartConfig<typeof ii> |
+    AsChartConfig<typeof bolii>// |
+    // AsChartConfig<typeof bolmfiii> 
   >[] = [
     {height: width / 4, chartIndex:hloc, config:{bollingers:[{fill:'green', count:20, exp:2}]}},
     {height: width / 16},
     {height: width / 8, chartIndex:volume},
     {height: width / 16},
-    {height: width / 8, chartIndex:mpt1, config:{depth:20, subDepth:60, include:[0,4,9,14,19]}},
+    {height: width / 8, chartIndex:mpt1, config:{depth:20, subDepth:756, include:[1,5,10,15,20]}},
     {height: width / 16},
     {height: width / 8, chartIndex:tdd, config:{depth:252}},
     {height: width / 16},
     {height: width / 8, chartIndex:mfi, config:{depth:10}},
     {height: width / 16},
-    {height: width / 8, chartIndex:bolmfi, config:{depth:60, bolingerIndex:0}},
+    {height: width / 8, chartIndex:ii, config:{depth:21}},
+    {height: width / 16},
+    {height: width / 8, chartIndex:bolmfi, config:{depth:756, bolingerIndex:0}},
+    {height: width / 16},
+    {height: width / 8, chartIndex:bolii, config:{depth:756, bolingerIndex:0}},
+    // {height: width / 16},
+    // {height: width / 8, chartIndex:bolmfiii, config:{depth:756, bolingerIndex:0}},
   ]
   if(rawData.current != props.data){
     props.data.forEach((value, index ,array) => {
@@ -94,7 +106,7 @@ export default (props:{data:Candle<{}>[], width:number, sizeRef?:React.MutableRe
         ))}
         <Handler caliber={caliber} candles={candles} width={width} charts={charts} candleRef={candleRef} shiftRef={shiftRef} rightWidth={rightWidth}/>
       </View>
-        <Plot candles={candles as Candle<AsCandleConfig<typeof mpt1 & typeof bolmfi>>[]} size={[props.width, props.width * 0.75]} subDepth={(charts[4].config as AsChartConfig<typeof mpt1>).subDepth}/>
+        <Plot candles={candles as Candle<any>[]} size={[props.width, props.width * 0.75]} subDepth={(charts[4].config as AsChartConfig<typeof mpt1>).subDepth}/>
       <Side candleSetter={(setter)=>{candleRef.current = setter}}/>
     </View>
   );

@@ -7,6 +7,10 @@ const MARGIN = 1;
 type CandleConfig = {
   volume?:{
     volumeUp: boolean;
+    mas?:{
+      vol:number,
+      val:number
+    }[]
   }
 }
 
@@ -30,14 +34,39 @@ const Bar = ({ candle, index, width, scaleY, scaleBody }: CandleProps<CandleConf
     </>
   );
 };
+type Config = {
+  mas?: number[]
+}
 
 export default {
     CandleComponent: Bar,
-    setData: (candle)=>{
-      if (candle.extra)
+    setData: (candle, config)=>{
+      if (candle.extra){
         candle.extra.volume = {
           volumeUp: candle.prev?((candle.prev.volume==candle.volume && candle.prev.extra?.volume)?candle.prev.extra.volume.volumeUp:(candle.prev.volume<candle.volume)):true
         }
+        if (config && config.mas){
+          const mas:(typeof candle.extra.volume.mas) = []
+          let prev = candle
+          let sum = 0, sumExp = 0, i =0
+          let sumVal = 0, sumExpVal = 0
+          config.mas.forEach((conf)=>{
+            while(i < conf){
+              sum += prev.volume
+              sumExp += prev.volume * prev.volume
+              sumVal += prev.volumeVal
+              sumExpVal += prev.volumeVal * prev.volumeVal
+              prev = prev.prev || prev
+              i++
+            }
+            const avg = sum/conf
+            const avgVal = sumVal/conf
+            // const std =  Math.sqrt(sumExp/conf.count - avg * avg)
+            mas.push({vol:avg, val:avgVal})
+          })
+          candle.extra.volume.mas = mas
+        }
+      }
     },
     setValues: (prev, candle)=>{
       prev.values.push(candle.volume)
@@ -45,4 +74,4 @@ export default {
     setDomains: (values)=>{
       values.domain = values.values.length?[Math.min(...values.values, 0), Math.max(...values.values)]:[0, 0]
     }
-} as IndexType<{}, CandleConfig>
+} as IndexType<Config, CandleConfig>
