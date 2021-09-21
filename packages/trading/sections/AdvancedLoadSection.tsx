@@ -20,6 +20,7 @@ async function load_stock(data_all:any[], endDate:Date, setter:(data_all:any[])=
     if (context.sync_lock == 0){
       context.sync_lock = 1
       let new_data_all: any[] = []
+      setter(new_data_all)
       for (const [i, d] of data_all.entries()){
   
         let full_code = d['full_code']
@@ -81,7 +82,7 @@ async function load_stock(data_all:any[], endDate:Date, setter:(data_all:any[])=
     const [maxData, setMaxData] = React.useState(0)
     return (
         <View>
-             <Button title={"load"} onPress={()=>{
+             <Button title={props.context.sync_lock == 0?"reload":"reloading..."} onPress={()=>{
                 if(props.context.sync_lock == 0){
                     props.setLastDateFix(props.lastDate)
                     if (props.lastDateFix?.getFullYear() != props.lastDate.getFullYear() || props.lastDateFix?.getMonth() != props.lastDate.getMonth()){

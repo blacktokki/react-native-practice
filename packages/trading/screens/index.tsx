@@ -1,4 +1,4 @@
-import MainScreen from './MainScreen'
+import UtilScreen from './UtilScreen'
 import SearchScreen from './SearchScreen'
 import DetailScreen from './DetailScreen'
 import AdvancedScreen from './AdvancedScreen'
@@ -22,9 +22,9 @@ export default {
         },
         params: {full_code: 'asd'}
     },
-    MainScreen:{
-        component: MainScreen,
-        title: 'Tab Main Title',
-        url: 'main'
+    UtilScreen:{
+        component: UtilScreen,
+        title: 'Tab Util Title',
+        url: 'util'
     },
 }

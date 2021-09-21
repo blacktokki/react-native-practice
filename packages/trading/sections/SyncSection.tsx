@@ -26,7 +26,7 @@ async function load_stock(data_all:any[], endDate:Date, setter:(data_all:any[])=
           await sleep(200)
           if (context.reload_stock == MAX_RELOAD_STOCK){
               console.log('reload!!!!')
-              new_data_all = data_all.map((item)=>item)
+              new_data_all = data_all.map((item)=>item)  // array.slice(0)
               setter(new_data_all)
               await save_last_date(new_data_all)
           }

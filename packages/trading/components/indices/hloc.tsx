@@ -41,6 +41,7 @@ type CandleConfig = {
         high:number,
         mid:number,
         low:number,
+        std:number,
         fill:string
     }[]
   }
@@ -132,7 +133,7 @@ export default {
             }
             const avg = sum/conf.count
             const std =  Math.sqrt(sumExp/conf.count - avg * avg)
-            bollingers.push({high:avg + conf.exp * std, low:avg - conf.exp * std, mid:avg, fill:conf.fill})
+            bollingers.push({high:avg + conf.exp * std, low:avg - conf.exp * std, mid:avg, fill:conf.fill, std:std})
           })
           candle.extra.hloc.bollingers = bollingers
         }

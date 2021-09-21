@@ -4,11 +4,11 @@ import { DrawerParamList } from '@react-native-practice/core/types';
 import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
 import SectionDummy from '@react-native-practice/core/components/SectionDummy'
 import SliderSection from '../sections/SliderSection'
+import PortfolioSection from '../sections/PortfolioSection'
 import DraggableFlatListMain from '@react-native-practice/core/components/DraggableFlatListMain'
 import { cdf, laplace_cdf } from '../utils/mathutil'
-import CoinBasePro from  '../sections/ChartSection'
 
-export default function TabMainScreen({
+export default function TabUtilScreen({
   navigation
 }: StackScreenProps<typeof DrawerParamList, 'TabMain'>) {
   return (
@@ -16,9 +16,8 @@ export default function TabMainScreen({
       header={[
         <Text style={styles.Panel_Button_Text}>{'Tab Two 1'} </Text>,
         <Text style={styles.Panel_Button_Text}>{'Tab Two 2'} </Text>,
-        <Text style={styles.Panel_Button_Text}>{'Tab Two 3'} </Text>,
-        <Text style={styles.Panel_Button_Text}>{'Tab Two 4'} </Text>,
-        <Text style={styles.Panel_Button_Text}>{'Tab Two 5'} </Text>
+        <Text style={styles.Panel_Button_Text}>{'PortFolio'} </Text>,
+        <Text style={styles.Panel_Button_Text}>{'Tab Two 4'} </Text>
       ]}
       dataCallback={()=>{}}
       holderStyle={styles.Panel_Holder}
@@ -26,7 +25,7 @@ export default function TabMainScreen({
     >
       <SliderSection renderText={(text)=>{return cdf(parseFloat(text) || 0.0).toString()}}/>
       <SliderSection renderText={(text)=>{return laplace_cdf(parseFloat(text) || 0.0).toString()}}/>
-      <CoinBasePro data={(require('../components/chart/dummydata.json') as any[]).map((value)=>{value.volume=0; return value})} width={Dimensions.get("window").width*0.8}/>
+      <PortfolioSection/>
       <SectionDummy
           title='Tab Two'
           pressText1='Go 1 screen!'

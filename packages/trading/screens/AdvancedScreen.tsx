@@ -29,6 +29,9 @@ export default function TabSearchScreen({
   // const searchRef = React.usseRef<NodeJS.Timeout>()
   const renderItem = React.useCallback(({item, index})=>{
     const candle = item['candles'][lastDateFixStr]
+    const candleStd = candle.extra.hloc.bollingers[0].std / candle.extra.hloc.bollingers[0].mid * 100
+    const ratio = 1 / (candleStd * candleStd)
+    const defaultCash = 1000000
     return (
     <View style={{flexDirection: 'row'}}>
       <TouchableOpacity onPress={()=>{navigation.navigate("Detail", {
@@ -37,10 +40,9 @@ export default function TabSearchScreen({
       })}}>
         <Text>[{index + 1}]{item.short_code}:{item.codeName} </Text>
       </TouchableOpacity>
-      <Text>({item['lastDate']})</Text>
-      <Text>({Math.round(candle.close)}원)</Text>
+      <Text>({Math.round(candle.close)}원, {Math.round(candle.extra.hloc.bollingers[0].std)}원, {candleStd.toFixed(2)}%, {(100 * ratio).toFixed(2)}%, {(defaultCash * ratio / candle.close).toFixed(1)}주)</Text>
       <Text>({Math.round(candle.extra.volume.mas[0].val/10000)}만원)</Text>
-      <Text>({candle.extra.bolii.std!=0?candle.extra.bolii.avg/candle.extra.bolii.std:0})</Text>
+      <Text>({(candle.extra.bolii.std!=0?candle.extra.bolii.avg/candle.extra.bolii.std:0).toFixed(4)})</Text>
     </View>
   )},[lastDateFixStr])
   React.useEffect(()=>{
@@ -55,15 +57,6 @@ export default function TabSearchScreen({
       }
     })
   },[data, syncData])
-  /*
-  const onChangeText = React.useCallback((value)=>{
-    setKeyword(value)
-    if (searchRef.current)
-      clearTimeout(searchRef.current)
-    searchRef.current = setTimeout(() => {
-      setDataSearch(value != ''?data.filter((item)=>{return (item.short_code as string).indexOf(value) > -1 || (item.codeName as string).indexOf(value) > -1}):[])
-    }, 200);
-  }, [data])*/
   const setLastDateFull = React.useCallback((date:Date) =>{
     setLastDate(date)
     AsyncStorage.setItem(STORAGE_KEY['last_date'], ddFormat(date))
@@ -75,9 +68,7 @@ export default function TabSearchScreen({
     const volumeRatio = 0.80
     const dateData = data.filter((value)=>value.candles[lastDateFixStr])
     const volumeVal = dateData.length?dateData.sort((a, b)=>{
-      // if(a.candles[dateStr] && b.candles[dateStr])
       return ((a.candles[lastDateFixStr] as Candle<any>).extra.volume.mas[0].val < (b.candles[lastDateFixStr] as Candle<any>).extra.volume.mas[0].val)?1:-1
-      // return 0  
     })[Math.floor(data.length * volumeRatio)-1].candles[lastDateFixStr].extra.volume.mas[0].val:0
 
     return dateData.filter((value)=>{
@@ -88,6 +79,13 @@ export default function TabSearchScreen({
        && (pb < 5 && candle.extra.ii.value > 0) && candle.extra.bolii.avg > 0
     })
   }, [data, lastDateFixStr])
+  const stds = React.useMemo(()=>{
+    return dataSearch.map((item)=>{
+      const candle = item['candles'][lastDateFixStr]
+      return (candle.extra.hloc.bollingers[0].std / candle.extra.hloc.bollingers[0].mid * 100).toFixed(2)
+   }).join(',')  
+  }, [dataSearch, lastDateFixStr])
+
   return (
     <View>
       <View style={{flexDirection:'row'}}>
@@ -97,6 +95,10 @@ export default function TabSearchScreen({
       </View>
       {loadContext.sync_lock==0?<SyncSection data={syncData} lastDate={lastDate} setData={setSyncData} setLastDate={setLastDate} context={syncContext}/>:undefined}
       {syncContext.sync_lock==0?<AdvancedLoadSection data={data} lastDate={lastDate} lastDateFix={lastDateFix} setData={setData} setLastDateFix={setLastDateFix} context={loadContext}/>:undefined}
+      <Separator/>
+      <Text>
+        Stds: {stds}
+      </Text>
       <Separator/>
       <FlatList
         data={dataSearch}
