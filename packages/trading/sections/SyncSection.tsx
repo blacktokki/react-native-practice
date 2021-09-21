@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Text, View, Button } from 'react-native';
-import { load_stock_json, save_last_date, sleep } from '../utils';
+import { load_stock_json, save_last_date, sleep, ddFormat } from '../utils';
 import { CompanyResponse } from '../types';
 const MAX_LOAD_STOCK = 4
 let current_load_stock = 0
@@ -10,11 +10,7 @@ export const syncContext = {
     sync_lock:0,
 }
 
-function ddFormat(date:Date){
-    return date.getFullYear().toString() + '/' + (date.getMonth() + 1).toString().padStart(2,'0') + '/' + date.getDate().toString().padStart(2,'0')
-  }
-
-async function load_stock(data_all:any[], endDate:Date, setter:(data_all:any[])=>void, show_log:number, context:any){
+async function load_stock(data_all:any[], endDate:Date, setter:(data_all:any[])=>void, show_log:number, context:typeof syncContext){
   if (context.sync_lock == 0){
     context.sync_lock = 1
     context.reload_stock = 0
@@ -53,7 +49,7 @@ async function load_stock(data_all:any[], endDate:Date, setter:(data_all:any[])=
             }
           }
           data_all[i]['checked'] = true
-          data_all[i]['lastDate'] = ddFormat(endDate)
+          data_all[i]['lastDate'] = j2['output'][0].TRD_DD || data_all[i]['lastDate'] || ddFormat(endDate)
           current_load_stock -= 1
       })
     }
@@ -67,7 +63,7 @@ async function load_stock(data_all:any[], endDate:Date, setter:(data_all:any[])=
   }
 }
 
-export default (props:{data:any[], lastDate:Date, setData:(data_all:any[])=>void, setLastDate:(date:Date)=>void, context:any}) =>{
+export default (props:{data:any[], lastDate:Date, setData:(data_all:any[])=>void, setLastDate:(date:Date)=>void, context:typeof syncContext}) =>{
     const syncLength = React.useMemo(()=>{
         return [
             props.data.filter((item)=>(new Date(item['lastDate']) >= props.lastDate)).length, 

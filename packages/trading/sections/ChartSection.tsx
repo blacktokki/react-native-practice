@@ -1,20 +1,20 @@
 import React from "react";
 import { StyleSheet, View, Platform } from "react-native";
 
-import Chart from "./Chart";
-import Handler from  "./Handler"
-import Side from "./Side"
-import { Candle, Chart as ChartType, AsCandleConfig, AsChartConfig } from "./CandleType"
-import hloc from "./indices/hloc";
-import volume from "./indices/volume";
-import mpt1 from "./indices/mpt1";
-import tdd from "./indices/tdd";
-import mfi from "./indices/mfi";
-import bolmfi from "./indices/bolmfi";
-import ii from "./indices/ii";
-import bolii from "./indices/bolii";
+import Chart from "../components/chart/Chart";
+import Handler from  "../components/chart/Handler"
+import Side from "../components/chart/Side"
+import { Candle, Chart as ChartType, AsCandleConfig, AsChartConfig } from "../components/chart/CandleType"
+import hloc from "../components/indices/hloc";
+import volume from "../components/indices/volume";
+import mpt1 from "../components/indices/mpt1";
+import tdd from "../components/indices/tdd";
+import mfi from "../components/indices/mfi";
+import bolmfi from "../components/indices/bolmfi";
+import ii from "../components/indices/ii";
+import bolii from "../components/indices/bolii";
 // import bolmfiii from "./indices/bolmfiii";
-import Plot from "./Plot"
+import Plot from "../components/chart/Plot"
 
 const styles = StyleSheet.create({
   container: {

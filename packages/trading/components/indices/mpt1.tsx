@@ -1,6 +1,6 @@
 import React from "react";
 import { Circle } from "react-native-svg";
-import { Candle, CandleProps, IndexType } from "../CandleType"
+import { Candle, CandleProps, IndexType } from "../chart/CandleType"
 
 const Dot = ({ x, y, z, r, fill }: any) => {
     return (

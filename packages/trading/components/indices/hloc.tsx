@@ -1,7 +1,7 @@
 import math from "mathjs";
 import React from "react";
 import { Line, Rect } from "react-native-svg";
-import { CandleProps, IndexType } from "../CandleType"
+import { CandleProps, IndexType } from "../chart/CandleType"
 
 const MARGIN = 1;
 

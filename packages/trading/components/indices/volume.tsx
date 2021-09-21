@@ -1,6 +1,6 @@
 import React from "react";
 import { Rect } from "react-native-svg";
-import { CandleProps, IndexType } from "../CandleType"
+import { CandleProps, IndexType } from "../chart/CandleType"
 
 const MARGIN = 1;
 

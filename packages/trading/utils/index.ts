@@ -2,7 +2,7 @@ import path from 'path'
 import moment from 'moment'
 import {load_json, save_json, exists_file, init_folder} from './jsonio'
 import {request_company, request_company_list } from './requestutil'
-import { CompanyResponse } from '../types'
+import { CompanyResponse, DailyFullModel, DailySimpleModel } from '../types'
 import { compressModel, decompressModel } from './compress'
 
 export const INDEX_STOCK = ['ARIRANG', 'HANARO', 'KBSTAR', 'KINDEX', 'KODEX', 'TIGER', 'KOSEF', 'SMART', 'TREX']
@@ -122,4 +122,20 @@ export function trdval_filter(data:any, trdval_days:number, min_trdval:number){
             break
     }
     return trd_val_sum > min_trdval
+}
+
+export function ddFormat(date:Date){
+    return date.getFullYear().toString() + '/' + (date.getMonth() + 1).toString().padStart(2,'0') + '/' + date.getDate().toString().padStart(2,'0')
+}
+
+export const ModelToCandle = (item:(DailySimpleModel | DailyFullModel))=>{
+    return {
+        "date": item.TRD_DD,
+        "open":  parseInt(item.TDD_OPNPRC.replace(/,/g, '')),
+        "high": parseInt(item.TDD_HGPRC.replace(/,/g, '')),
+        "low": parseInt(item.TDD_LWPRC.replace(/,/g, '')),
+        "close":parseInt( item.TDD_CLSPRC.replace(/,/g, '')),
+        "volume":parseInt(item.ACC_TRDVOL.replace(/,/g, '')),
+        "volumeVal":parseInt(item.ACC_TRDVAL.replace(/,/g, '')),
+    }
 }

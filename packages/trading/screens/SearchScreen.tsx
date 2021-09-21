@@ -4,8 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import { DrawerParamList } from '@react-native-practice/core/types';
 import { TouchableOpacity ,Text, View, FlatList, TextInput, Button } from 'react-native';
-import {load_stocklist_json, STORAGE_KEY} from '../utils';
-import SyncSection, { syncContext } from '../components/SyncSection';
+import {load_stocklist_json, STORAGE_KEY, ddFormat} from '../utils';
+import SyncSection, { syncContext } from '../sections/SyncSection';
 
 function Separator(){
   return <View style={{
@@ -13,10 +13,6 @@ function Separator(){
     marginVertical: 30,
     height: 1
   }}/>
-}
-
-function ddFormat(date:Date){
-  return date.getFullYear().toString() + '/' + (date.getMonth() + 1).toString().padStart(2,'0') + '/' + date.getDate().toString().padStart(2,'0')
 }
 
 export default function TabSearchScreen({

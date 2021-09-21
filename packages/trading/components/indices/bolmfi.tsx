@@ -1,6 +1,6 @@
 import React from "react";
 import { Line } from "react-native-svg";
-import { Candle, CandleProps, IndexType, AsCandleConfig} from "../CandleType"
+import { Candle, CandleProps, IndexType, AsCandleConfig} from "../chart/CandleType"
 import hloc from "./hloc";
 import mfi from "./mfi";
 

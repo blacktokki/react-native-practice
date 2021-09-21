@@ -3,10 +3,10 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { DrawerParamList } from '@react-native-practice/core/types';
 import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
 import SectionDummy from '@react-native-practice/core/components/SectionDummy'
-import SliderSection from '../components/SliderSection'
+import SliderSection from '../sections/SliderSection'
 import DraggableFlatListMain from '@react-native-practice/core/components/DraggableFlatListMain'
 import { cdf, laplace_cdf } from '../utils/mathutil'
-import CoinBasePro from  '../components/ChartContainer'
+import CoinBasePro from  '../sections/ChartSection'
 
 export default function TabMainScreen({
   navigation
@@ -26,7 +26,7 @@ export default function TabMainScreen({
     >
       <SliderSection renderText={(text)=>{return cdf(parseFloat(text) || 0.0).toString()}}/>
       <SliderSection renderText={(text)=>{return laplace_cdf(parseFloat(text) || 0.0).toString()}}/>
-      <CoinBasePro data={(require('../components/dummydata.json') as any[]).map((value)=>{value.volume=0; return value})} width={Dimensions.get("window").width*0.8}/>
+      <CoinBasePro data={(require('../components/chart/dummydata.json') as any[]).map((value)=>{value.volume=0; return value})} width={Dimensions.get("window").width*0.8}/>
       <SectionDummy
           title='Tab Two'
           pressText1='Go 1 screen!'

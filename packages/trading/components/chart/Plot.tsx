@@ -1,10 +1,10 @@
 import React from "react";
 import { Svg, Text } from "react-native-svg";
 import { scaleLinear } from "d3-scale";
-import { Candle as CandleModel, AsCandleConfig } from "./CandleType"
-import mpt1 from "./indices/mpt1";
-import bolmfi from "./indices/bolmfi";
-import bolii from "./indices/bolii";
+import { Candle as CandleModel, AsCandleConfig } from "../chart/CandleType"
+import mpt1 from "../indices/mpt1";
+import bolmfi from "../indices/bolmfi";
+import bolii from "../indices/bolii";
 // import bolmfiii from "./indices/bolmfiii";
 import { Circle, Line } from "react-native-svg";
 

@@ -4,20 +4,9 @@ import * as Linking from 'expo-linking';
 import { StackScreenProps } from '@react-navigation/stack';
 import { DrawerParamList } from '@react-native-practice/core/types';
 import useResizeWindows from  '@react-native-practice/core/hooks/useResizeWindow';
-import { CompanyResponse, DailyFullModel, DailySimpleModel } from '../types';
-import { load_stock_json } from '../utils';
-import CoinBasePro from '../components/ChartContainer';
-export const ModelToCandle = (item:(DailySimpleModel | DailyFullModel))=>{
-    return {
-        "date": item.TRD_DD,
-        "open":  parseInt(item.TDD_OPNPRC.replace(/,/g, '')),
-        "high": parseInt(item.TDD_HGPRC.replace(/,/g, '')),
-        "low": parseInt(item.TDD_LWPRC.replace(/,/g, '')),
-        "close":parseInt( item.TDD_CLSPRC.replace(/,/g, '')),
-        "volume":parseInt(item.ACC_TRDVOL.replace(/,/g, '')),
-        "volumeVal":parseInt(item.ACC_TRDVAL.replace(/,/g, '')),
-    }
-}
+import { CompanyResponse } from '../types';
+import { load_stock_json, ModelToCandle } from '../utils';
+import CoinBasePro from '../sections/ChartSection';
 
 export default function TabDetailScreen({
     navigation, route
