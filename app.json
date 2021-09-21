@@ -25,7 +25,8 @@
       "adaptiveIcon": {
         "foregroundImage": "node_modules/@react-native-practice/core/assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.blacktokki.reactnativepractice"
     },
     "web": {
       "favicon": "node_modules/@react-native-practice/core/assets/images/favicon.png"

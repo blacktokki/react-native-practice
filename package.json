@@ -17,6 +17,7 @@
     "desktop": "expo-electron start",
     "eject": "expo eject",
     "test": "jest --watchAll",
+    "mobile:android": "expo build:android",
     "github": "gh-pages -d web-build",
     "pregithub": "expo build:web && copyfiles --flat node_modules/@react-native-practice/core/404.html web-build",
     "desktop:mac": "electron-webpack && electron-builder --dir -c.compression=store -c.mac.identity=null",
