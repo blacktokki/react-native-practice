@@ -2,7 +2,7 @@ import * as React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import { DrawerParamList } from '@react-native-practice/core/types';
-import { TouchableOpacity ,Text, View, FlatList, TextInput, Button } from 'react-native';
+import { TouchableOpacity ,Text, View, FlatList, TextInput, Button, ScrollView } from 'react-native';
 import {load_stocklist_json, STORAGE_KEY, ddFormat} from '../utils';
 import { Candle } from '../components/chart/CandleType';
 import SyncSection, { syncContext } from '../sections/SyncSection';
@@ -33,7 +33,7 @@ export default function TabSearchScreen({
     const ratio = 1 / (candleStd * candleStd)
     const defaultCash = 1000000
     return (
-    <View style={{flexDirection: 'row'}}>
+    <View style={{flexWrap: 'wrap'}}>
       <TouchableOpacity onPress={()=>{navigation.navigate("Detail", {
         screen: 'DetailScreen',
         params: {full_code: item.full_code}
@@ -41,8 +41,7 @@ export default function TabSearchScreen({
         <Text>[{index + 1}]{item.short_code}:{item.codeName} </Text>
       </TouchableOpacity>
       <Text>({Math.round(candle.close)}원, {Math.round(candle.extra.hloc.bollingers[0].std)}원, {candleStd.toFixed(2)}%, {(100 * ratio).toFixed(2)}%, {(defaultCash * ratio / candle.close).toFixed(1)}주)</Text>
-      <Text>({Math.round(candle.extra.volume.mas[0].val/10000)}만원)</Text>
-      <Text>({(candle.extra.bolii.std!=0?candle.extra.bolii.avg/candle.extra.bolii.std:0).toFixed(4)})</Text>
+      <Text>({Math.round(candle.extra.volume.mas[0].val/10000)}만원)({(candle.extra.bolii.std!=0?candle.extra.bolii.avg/candle.extra.bolii.std:0).toFixed(4)})</Text>
     </View>
   )},[lastDateFixStr])
   React.useEffect(()=>{
@@ -87,7 +86,7 @@ export default function TabSearchScreen({
   }, [dataSearch, lastDateFixStr])
 
   return (
-    <View>
+    <ScrollView>
       <View style={{flexDirection:'row'}}>
         <Text>Last Date: {ddFormat(lastDate)}</Text>
         <Button title={"down"} onPress={()=>{setLastDateFull(moment(lastDate).add(-1,'day').toDate())}}/>
@@ -96,16 +95,21 @@ export default function TabSearchScreen({
       {loadContext.sync_lock==0?<SyncSection data={syncData} lastDate={lastDate} setData={setSyncData} setLastDate={setLastDate} context={syncContext}/>:undefined}
       {syncContext.sync_lock==0?<AdvancedLoadSection data={data} lastDate={lastDate} lastDateFix={lastDateFix} setData={setData} setLastDateFix={setLastDateFix} context={loadContext}/>:undefined}
       <Separator/>
-      <Text>
-        Stds: {stds}
-      </Text>
+      <View style={{flexDirection:'row'}}>
+        <Text>Stds: {stds}</Text>
+        <Button title={'go portfolio'} onPress={()=>{navigation.navigate("Util", {
+          screen: 'UtilScreen',
+          params: {optionStd: stds}
+        })}}/>
+      </View>
       <Separator/>
       <FlatList
         data={dataSearch}
+        scrollEnabled={false}
         renderItem={renderItem}
         keyExtractor={item => (item as any).full_code}
         maxToRenderPerBatch={loadContext.sync_lock!=1 && syncContext.sync_lock!=1?200:10}
       />
-    </View>
+    </ScrollView>
   )
 }

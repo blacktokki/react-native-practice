@@ -1,7 +1,8 @@
 import * as React from 'react';
+import { useRoute } from '@react-navigation/native';
 import { Text, View } from '@react-native-practice/core/components/Themed';
 import { StyleSheet, TextInput, Button } from 'react-native';
-import { Line, Svg } from "react-native-svg";
+// import { Line, Svg } from "react-native-svg";
 import { FlatList } from 'react-native-gesture-handler';
 
 
@@ -14,11 +15,12 @@ type ResultSet = {
 }
 
 export default function SectionDummy(props:{}){
-    const [fixStd, setFixStd] = React.useState('') 
+    const [fixStd, setFixStd] = React.useState('')
     const [optionStd, setOptionStd] = React.useState('')
     const [optionCount, setOptionCount] = React.useState(0)
     const [size, setSize] = React.useState<{height:number|undefined}>({height:undefined});
     const [results, setResults] = React.useState<ResultSet[]>([])
+    const route = useRoute()
     const onPress = React.useCallback(()=>{
         let fixSplit = (fixStd.length?fixStd.split(','):[]).map(value=>parseFloat(value))
         let optionSplit = optionStd.length?optionStd.split(','):[]
@@ -58,6 +60,9 @@ export default function SectionDummy(props:{}){
             {item.results.map((item2, index2)=>(<Text key={index2}>({item2.std}:{item2.ratio.toFixed(2)}) </Text>))}
         </View>)
     },[])
+    React.useEffect(()=>{
+        setOptionStd((route.params as any)?.optionStd)
+    }, [route.params])
     return (
     <View style={styles.commonContainer}>
         <View style={styles.commonOption}>

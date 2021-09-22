@@ -3,7 +3,7 @@ import moment from 'moment'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import { DrawerParamList } from '@react-native-practice/core/types';
-import { TouchableOpacity ,Text, View, FlatList, TextInput, Button } from 'react-native';
+import { TouchableOpacity ,Text, View, FlatList, TextInput, Button, ScrollView } from 'react-native';
 import {load_stocklist_json, STORAGE_KEY, ddFormat} from '../utils';
 import SyncSection, { syncContext } from '../sections/SyncSection';
 
@@ -74,7 +74,7 @@ export default function TabSearchScreen({
     }, 200);
   }, [data])
   return (
-    <View>
+    <ScrollView>
       <TextInput style={{borderColor:'#000', borderWidth: 1, marginVertical: 30}} onChangeText={onChangeText} value={keyword}></TextInput>
       <View style={{flexDirection:'row'}}>
         <Text>Last Date: {ddFormat(lastDate)}</Text>
@@ -85,10 +85,11 @@ export default function TabSearchScreen({
       <Separator/>
       <FlatList
         data={dataSearch}
+        scrollEnabled={false}
         renderItem={renderItem}
         keyExtractor={item => (item as any).full_code}
         maxToRenderPerBatch={syncContext.sync_lock!=1?200:10}
       />
-    </View>
+    </ScrollView>
   )
 }

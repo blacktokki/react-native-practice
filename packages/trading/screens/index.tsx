@@ -25,6 +25,7 @@ export default {
     UtilScreen:{
         component: UtilScreen,
         title: 'Tab Util Title',
-        url: 'util'
+        url: 'util',
+        params: {optionStd: 'asd'}
     },
 }
