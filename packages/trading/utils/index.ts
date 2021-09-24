@@ -3,7 +3,7 @@ import moment from 'moment'
 import {load_json, save_json, exists_file, init_folder} from './jsonio'
 import {request_company, request_company_list } from './requestutil'
 import { CompanyResponse, DailyFullModel, DailySimpleModel } from '../types'
-import { compressModel, decompressModel } from './compress'
+import { saveCompress, loadCompress } from './compress'
 
 export const INDEX_STOCK = ['ARIRANG', 'HANARO', 'KBSTAR', 'KINDEX', 'KODEX', 'TIGER', 'KOSEF', 'SMART', 'TREX']
 export const FILE_SPLIT = 10
@@ -48,22 +48,35 @@ const default_date = {
     end_date:moment(new Date()).set({h: 0, m: 0, s:0}).toDate()
 }
 
+async function _save_stock(j2:CompanyResponse, _path:string, isSimple:number){
+    if(!isSimple)
+        await save_json(j2, _path)
+    else
+        await saveCompress(j2, _path, isSimple==2)
+}
+
 export async function load_stock_json(full_code:string, options?:{start_date:Date, end_date:Date, log_datetime:number, isSimple:number}){
     options = Object.assign({start_date:default_date.start_date, end_date:default_date.end_date, log_datetime:0}, options)
-    let folder = options.isSimple? 'simple': 'stock'
-    let _path = path.join('data', folder, full_code + '.json')
-    await init_folder('data')
-    await init_folder(path.join('data', folder))
+    let _path;
+    if (options.isSimple==2)
+        _path = full_code
+    else{
+        const folder = options.isSimple?'simple':'stock'
+        _path = path.join('data', folder, full_code + '.json')
+        await init_folder('data')
+        await init_folder(path.join('data', folder))
+    }
     let success = true;
     let j2:CompanyResponse
     try{
-        j2 = await load_json(_path)
-        decompressModel(options.isSimple, j2)
+        if(!options.isSimple)
+            j2 = await load_json(_path)
+        else
+            j2 = await loadCompress(_path, options.isSimple==2)
     }catch(e){
         success = false;
         j2 = await request_company(full_code, default_date)
-        compressModel(options.isSimple, j2)
-        save_json(j2, _path)
+        _save_stock(j2, _path, options.isSimple)
         j2['_status'] = 0
         await sleep(200)
     }
@@ -75,8 +88,7 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
             console.log(options.start_date, last_date, options.end_date)
         if  (output_len == 0){
             j2 = await request_company(full_code, default_date) as any
-            compressModel(options.isSimple, j2)
-            save_json(j2, _path)
+            _save_stock(j2, _path, options.isSimple)
             j2['_status'] = 2
             await sleep(200)
         }
@@ -84,8 +96,7 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
             let j3:CompanyResponse = await request_company(full_code, {start_date:last_date, end_date:options.end_date})
             j2['output'] = j3['output'].concat(j2['output'].slice(1))
             j2['CURRENT_DATETIME'] = j3['CURRENT_DATETIME']
-            compressModel(options.isSimple, j2)
-            save_json(j2, _path)
+            _save_stock(j2, _path, options.isSimple)
             j2['_status'] = 3
             await sleep(200)
         }
