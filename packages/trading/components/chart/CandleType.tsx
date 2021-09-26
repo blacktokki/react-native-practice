@@ -24,6 +24,7 @@ export interface Candle<T> {
     volume: number;
     volumeVal: number;
     prev?: Candle<T>;
+    willChange?: number;
     extra?: T
 }
 

@@ -43,6 +43,7 @@ type CandleConfig = {
         low:number,
         std:number,
         fill:string
+        _gap:number
     }[]
   }
 }
@@ -124,7 +125,7 @@ export default {
           const bollingers:(typeof candle.extra.hloc.bollingers) = []
           let prev = candle
           let sum = 0, sumExp = 0, i =0
-          config.bollingers.forEach((conf)=>{
+          config.bollingers.forEach((conf, ii)=>{
             while(i < conf.count){
               sum += prev.close
               sumExp += prev.close * prev.close
@@ -133,7 +134,7 @@ export default {
             }
             const avg = sum/conf.count
             const std =  Math.sqrt(sumExp/conf.count - avg * avg)
-            bollingers.push({high:avg + conf.exp * std, low:avg - conf.exp * std, mid:avg, fill:conf.fill, std:std})
+            bollingers.push({high:avg + conf.exp * std, low:avg - conf.exp * std, mid:avg, fill:conf.fill, std:std, _gap:(avg / (prev.extra?.hloc?.bollingers?prev.extra.hloc.bollingers[ii].mid:avg) -1)*100})
           })
           candle.extra.hloc.bollingers = bollingers
         }

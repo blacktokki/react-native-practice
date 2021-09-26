@@ -7,7 +7,7 @@ export async function save_json(data:any, _path:string){
 }
 
 export async function load_json(_path:string){
-    let data = fs.readFileSync(_path, 'utf8')
+    let data = await fs.promises.readFile(_path, 'utf8')
     return JSON.parse(data)
 }
 
@@ -17,6 +17,6 @@ export async function exists_file(_path:string){
 
 export async function init_folder(_path:string){
     if(!await exists_file(_path)){
-        fs.mkdirSync(_path)
+        await fs.promises.mkdir(_path)
     }
 }

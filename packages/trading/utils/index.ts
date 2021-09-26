@@ -11,7 +11,8 @@ export const TRDVAL_DAYS = 20
 export const MIN_TRDVAL = 2000000000
 export const REPORT_OFFSET2 = 0.5
 export const STORAGE_KEY = {
-    'last_date': 'RNP_LAST_DATE'
+    'last_date': 'RNP_LAST_DATE',
+    'condition': 'RNP_CONDITION'
 }
 
 export function sleep(ms:number){
@@ -140,12 +141,13 @@ export function ddFormat(date:Date){
 }
 
 export const ModelToCandle = (item:(DailySimpleModel | DailyFullModel))=>{
+    const close = parseInt( item.TDD_CLSPRC.replace(/,/g, ''))
     return {
         "date": item.TRD_DD,
-        "open":  parseInt(item.TDD_OPNPRC.replace(/,/g, '')),
-        "high": parseInt(item.TDD_HGPRC.replace(/,/g, '')),
-        "low": parseInt(item.TDD_LWPRC.replace(/,/g, '')),
-        "close":parseInt( item.TDD_CLSPRC.replace(/,/g, '')),
+        "open":  item.TDD_OPNPRC!='0'?parseInt(item.TDD_OPNPRC.replace(/,/g, '')):close,
+        "high": item.TDD_HGPRC!='0'?parseInt(item.TDD_HGPRC.replace(/,/g, '')):close,
+        "low": item.TDD_LWPRC!='0'?parseInt(item.TDD_LWPRC.replace(/,/g, '')):close,
+        "close":close,
         "volume":parseInt(item.ACC_TRDVOL.replace(/,/g, '')),
         "volumeVal":parseInt(item.ACC_TRDVAL.replace(/,/g, '')),
     }

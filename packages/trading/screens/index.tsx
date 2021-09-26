@@ -1,17 +1,17 @@
 import UtilScreen from './UtilScreen'
 import SearchScreen from './SearchScreen'
 import DetailScreen from './DetailScreen'
-import AdvancedScreen from './AdvancedScreen'
+import BackTradeScreen from './BackTradeScreen'
 export default {
     SearchScreen:{
         component: SearchScreen,
         title: 'Tab Search Title',
         url: ''
     },
-    AdvancedScreen:{
-        component:  AdvancedScreen,
-        title: 'Tab Advanced Search Title',
-        url: 'advanced'
+    BackTradeScreen:{
+        component:  BackTradeScreen,
+        title: 'Tab BackTrade Title',
+        url: 'backtrade'
     },
     DetailScreen:{
         component: DetailScreen,

@@ -63,6 +63,12 @@ export default (props:{data:Candle<{}>[], width:number, sizeRef?:React.MutableRe
       if (index > 0)
         value.prev = array[index - 1]
       value.extra = {}
+
+      if (index < array.length-1){
+        const change = array[index +1].open/value.close
+        if (Math.abs(1- change)>0.3)
+          value.willChange = change 
+      }
       charts.forEach((handler)=>{
         handler.chartIndex?.setData(value, handler.config)
       })
