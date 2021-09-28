@@ -24,3 +24,7 @@ export async function init_folder(_path:string){
         await fs.makeDirectoryAsync(joinDefaultPath(_path), { intermediates: true });
     }
 }
+
+export async function file_list(_path:string){
+    return await fs.readDirectoryAsync(joinDefaultPath(_path))
+}

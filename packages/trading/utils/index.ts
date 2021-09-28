@@ -1,6 +1,6 @@
 import path from 'path'
 import moment from 'moment'
-import {load_json, save_json, exists_file, init_folder} from './jsonio'
+import {load_json, save_json, exists_file, init_folder, file_list} from './jsonio'
 import {request_company, request_company_list } from './requestutil'
 import { CompanyResponse, DailyFullModel, DailySimpleModel } from '../types'
 import { saveCompress, loadCompress } from './compress'
@@ -122,6 +122,26 @@ export function is_index_stock(codename:string){
             return true
     }
     return false
+}
+
+export async function save_backtrade_json(result:any){
+    const _path = path.join('data', 'backtrade')
+    await init_folder('data')
+    await init_folder(_path)
+    if (result.title){
+        await save_json(result, path.join(_path, `${result.title}.json`))
+    }
+}
+
+export async function load_backtrade_json(filename?:string){
+    const _path = path.join('data', 'backtrade')
+    await init_folder('data')
+    await init_folder(_path)
+    if(filename){
+        return await load_json(path.join(_path, filename))
+    }else{
+        return await file_list(_path)
+    }
 }
 
 export function trdval_filter(data:any, trdval_days:number, min_trdval:number){

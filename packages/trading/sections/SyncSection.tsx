@@ -3,7 +3,8 @@ import { Text, View, Button } from 'react-native';
 import { load_stock_json, save_last_date, sleep, ddFormat } from '../utils';
 import { CompanyResponse } from '../types';
 
-const MAX_RELOAD_STOCK = 10
+const MAX_LOAD_STOCK = 100
+const MAX_RELOAD_STOCK = 100
 export const syncContext = {
     reload_stock:0,
     sync_lock:0,
@@ -19,6 +20,22 @@ async function load_stock(data_all:any[], endDate:Date, setter:(data_all:any[])=
     setter(new_data_all)
     for (const [i, d] of data_all.entries()){
       let full_code = d['full_code']
+      context.reload_stock += 1
+      while (context.sync_lock==2)
+        await sleep(1000)
+      while (current_load_stock >= MAX_LOAD_STOCK || context.reload_stock>=MAX_RELOAD_STOCK){
+          await sleep(100)
+          if (context.reload_stock == MAX_RELOAD_STOCK){
+              console.log('reload!!!!')
+              new_data_all = data_all.map((item)=>item)  // array.slice(0)
+              setter(new_data_all)
+              await save_last_date(new_data_all)
+          }
+          else{
+            context.reload_stock += 1
+            console.log(current_load_stock, '/', MAX_LOAD_STOCK)
+          }
+      }
       current_load_stock += 1
       load_stock_json(full_code, {
         start_date:new Date(2016, 0, 1), end_date:endDate, log_datetime:0, isSimple:1
@@ -35,13 +52,6 @@ async function load_stock(data_all:any[], endDate:Date, setter:(data_all:any[])=
           data_all[i]['checked'] = true
           data_all[i]['lastDate'] = j2['output'][0].TRD_DD || data_all[i]['lastDate'] || ddFormat(endDate)
           current_load_stock -= 1
-          context.reload_stock += 1
-          if (context.reload_stock == MAX_RELOAD_STOCK){
-            console.log('reload!!!!')
-            new_data_all = data_all.map((item)=>item)  // array.slice(0)
-            setter(new_data_all)
-            await save_last_date(new_data_all)
-          }
       })
     }
     while (current_load_stock > 0)
