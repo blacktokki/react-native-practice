@@ -22,6 +22,7 @@ export default function TabBackTradeScreen({
    const [reportList, setReportList] = React.useState<string[]|undefined>()
    const [result, setResult] = React.useState< BackTradeResult>({})
    const [popup, setPopup] = React.useState<{x?:number, y?:number, idx?:number}>({})
+   const [popupHeight, setPopupHeight] = React.useState(0)
    const scrollOffsetRef = React.useRef(0)
    const screenHeight = useHeaderHeight()
    const resultRow = React.useMemo(()=>{return (popup.idx!=undefined && result?.result)?result.result[popup.idx]:undefined}, [result, popup])
@@ -83,17 +84,18 @@ export default function TabBackTradeScreen({
           renderItem={renderItem}
         />
         {resultRow?(
-          <TouchableOpacity style={{
-            position: 'absolute',
-            top: popup.y,
-            left: popup.x,
-            backgroundColor: 'white',
-            borderColor:'#000',
-            borderWidth: 2,
-            padding:5
-          }}
+          <TouchableOpacity
+            style={{
+              position: 'absolute',
+              top: popup.y,
+              left: popup.x,
+              backgroundColor: 'white',
+              borderColor:'#000',
+              borderWidth: 2,
+              padding:5
+            }}
             onPress={()=>{setPopup({})}}
-          >
+            onLayout={(e)=>{setPopupHeight(Math.max(popupHeight, e.nativeEvent.layout.height))}}>
             <Text>{resultRow[0]}</Text>
             <Separator/>
             {resultRow[1].stocks.map((v, k)=>(<Text key={k}>{v.stock['full_code']}:{v.stock['codeName']}:{v.candle.close}원:{v.signal}</Text>))}
@@ -103,6 +105,7 @@ export default function TabBackTradeScreen({
             {Object.entries<any>(resultRow[1].currentStocks).map((v, k)=>(<Text key={k}>{v[0]}:{v[1][0]}</Text>))}
           </TouchableOpacity>
         ):undefined}
+      <View style={{width:'100%', height:popupHeight}}/>
     </ScrollView>
   )
 }
