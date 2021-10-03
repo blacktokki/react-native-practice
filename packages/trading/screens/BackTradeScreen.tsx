@@ -4,7 +4,7 @@ import { DrawerParamList } from '@react-native-practice/core/types';
 import { TouchableOpacity ,Text, View, FlatList, TextInput, Button, ScrollView } from 'react-native';
 import ConditionSection from '../sections/ConditionSection';
 import BackTradeSyncSection, {backTradeContext, BackTradeResult, BackTradeRow} from '../sections/BackTradeSyncSection';
-import { load_backtrade_json, load_stocklist_json, save_backtrade_json } from '../utils';
+import { delete_backtrade_json, load_backtrade_json, load_stocklist_json, save_backtrade_json } from '../utils';
 import { useHeaderHeight } from '@react-navigation/stack';
 
 function Separator(){
@@ -21,6 +21,7 @@ export default function TabBackTradeScreen({
    const [data, setData] = React.useState<any[]>([])
    const [reportList, setReportList] = React.useState<string[]|undefined>()
    const [result, setResult] = React.useState< BackTradeResult>({})
+   const [year, setYear] = React.useState(new Date().getFullYear())
    const [popup, setPopup] = React.useState<{x?:number, y?:number, idx?:number}>({})
    const [popupHeight, setPopupHeight] = React.useState(0)
    const scrollOffsetRef = React.useRef(0)
@@ -42,10 +43,17 @@ export default function TabBackTradeScreen({
       load_backtrade_json().then(setReportList)
     }
   },[data, reportList])
+  const resultYear = React.useMemo(()=>{
+    return result.result?.filter((value)=>{return value[0].startsWith(year.toString())})
+  }, [result, year])
   const renderReport = React.useCallback(({item}:{item:string})=>{
-    return (<TouchableOpacity onPress={()=>load_backtrade_json(item).then((data)=>{
-      setResult(data)
-    })}><Text>{item}</Text></TouchableOpacity> )
+    return (
+    <View style={{flexDirection:'row'}}>
+      <TouchableOpacity onPress={()=>{setResult({});load_backtrade_json(item).then((data)=>{setResult(data)})}}>
+        <Text>{item}</Text>
+      </TouchableOpacity>
+      <Button title={'X'} onPress={()=>{delete_backtrade_json(item).then(()=>load_backtrade_json().then(setReportList))}}/>
+    </View>)
   }, [])
 
  const renderItem = React.useCallback(({item, index}:{item:BackTradeRow, index:number})=>{
@@ -57,6 +65,13 @@ export default function TabBackTradeScreen({
       <Text>{item[0]} cash:{item[1].cash} earn:{item[1].earn}</Text>
     </TouchableOpacity>)
  }, [screenHeight])
+
+ const navigateDetail = (fullcode:string)=>{
+  navigation.navigate("Detail", {
+    screen: 'DetailScreen',
+    params: {full_code: fullcode}
+  })
+ }
    return (
     <ScrollView onScroll={(e)=>{scrollOffsetRef.current = e.nativeEvent.contentOffset.y}}>
         <View style={{flexDirection:'row'}}>
@@ -78,13 +93,19 @@ export default function TabBackTradeScreen({
           </View>
         </View>
         <Separator/>
+        <View style={{flexDirection:'row'}}>
+          <Button title={'prev'} onPress={()=>{setYear(year-1)}}/>
+          <Text>{year}</Text>
+          <Button title={'next'} onPress={()=>{setYear(year+1)}}/>
+        </View>
         <FlatList
           scrollEnabled={false}
-          data={result.result}
+          data={resultYear}
           renderItem={renderItem}
         />
+        <View style={{width:'100%', height:popupHeight}}/>
         {resultRow?(
-          <TouchableOpacity
+          <View
             style={{
               position: 'absolute',
               top: popup.y,
@@ -94,18 +115,34 @@ export default function TabBackTradeScreen({
               borderWidth: 2,
               padding:5
             }}
-            onPress={()=>{setPopup({})}}
-            onLayout={(e)=>{setPopupHeight(Math.max(popupHeight, e.nativeEvent.layout.height))}}>
+            onLayout={(e)=>{setPopupHeight(e.nativeEvent.layout.height)}}>
             <Text>{resultRow[0]}</Text>
             <Separator/>
-            {resultRow[1].stocks.map((v, k)=>(<Text key={k}>{v.stock['full_code']}:{v.stock['codeName']}:{v.candle.close}원:{v.signal}</Text>))}
+            <Text>매도</Text>
+            {resultRow[1].sells.map((v, k)=>(<TouchableOpacity key={k} onPress={()=>{navigateDetail( v.stock['full_code'])}}>
+              <Text>{v.stock['full_code']}:{v.stock['codeName']}:{v.candle.close}원:({v.minCorr})</Text>
+              </TouchableOpacity>  
+            ))}
             <Separator/>
-            {resultRow[1].trades.map((v, k)=>(<Text key={k}>{v}</Text>))}
+            <Text>매수</Text>
+            {resultRow[1].buys.map((v, k)=>(<TouchableOpacity key={k} onPress={()=>{navigateDetail( v.stock['full_code'])}}>
+              <Text>{v.stock['full_code']}:{v.stock['codeName']}:{v.candle.close}원:({v.minCorr})</Text>
+              </TouchableOpacity>  
+            ))}
             <Separator/>
-            {Object.entries<any>(resultRow[1].currentStocks).map((v, k)=>(<Text key={k}>{v[0]}:{v[1][0]}</Text>))}
-          </TouchableOpacity>
+            <Text>거래</Text>
+            {resultRow[1].trades.map((v, k)=>(// <TouchableOpacity key={k} onPress={()=>{navigateDetail(v.split(' ')[0])}}>
+              <Text key={k}>{v}</Text> //</TouchableOpacity>
+            ))
+            }
+            <Separator/>
+            <Text>보유</Text>
+            {Object.entries<any>(resultRow[1].currentStocks).map((v, k)=>(<TouchableOpacity key={k} onPress={()=>{navigateDetail(v[0])}}>
+            <Text>{v[0]}:{v[1][0]}</Text>
+            </TouchableOpacity>))}
+            <Button title={'close'} onPress={()=>{setPopup({});setPopupHeight(0)}}/>
+          </View>
         ):undefined}
-      <View style={{width:'100%', height:popupHeight}}/>
     </ScrollView>
   )
 }

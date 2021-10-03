@@ -8,8 +8,12 @@ export async function save_json(data:any, _path:string){
 
 export async function load_json(_path:string){
     let data = await fs.promises.readFile(_path, 'utf8')
-    console.log(_path, data.length)
+    // console.log(_path, data.length)
     return JSON.parse(data)
+}
+
+export async function delete_json(_path:string){
+    await fs.promises.unlink(_path)
 }
 
 export async function exists_file(_path:string){

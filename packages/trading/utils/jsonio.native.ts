@@ -15,6 +15,11 @@ export async function load_json(_path:string){
     return JSON.parse(data)
 }
 
+export async function delete_json(_path:string){
+    await fs.deleteAsync(joinDefaultPath(_path))
+}
+
+
 export async function exists_file(_path:string){
     return (await fs.getInfoAsync(joinDefaultPath(_path))).exists
 }

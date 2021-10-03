@@ -1,6 +1,6 @@
 import path from 'path'
 import moment from 'moment'
-import {load_json, save_json, exists_file, init_folder, file_list} from './jsonio'
+import {load_json, save_json, exists_file, init_folder, file_list, delete_json} from './jsonio'
 import {request_company, request_company_list } from './requestutil'
 import { CompanyResponse, DailyFullModel, DailySimpleModel } from '../types'
 import { saveCompress, loadCompress } from './compress'
@@ -15,13 +15,18 @@ export const STORAGE_KEY = {
     'condition': 'RNP_CONDITION'
 }
 
+init_folder('data').then(()=>{
+    init_folder(path.join('data', 'simple'))
+    init_folder(path.join('data', 'stock'))
+    init_folder(path.join('data', 'backtrade'))
+})
+
 export function sleep(ms:number){
     return new Promise((r) => setTimeout(r, ms));
 }
 
 export async function load_stocklist_json(){
     const _path = path.join('data', 'list.json')
-    await init_folder('data')
     if (await exists_file(_path)){
         var j = await load_json(_path)
     }
@@ -64,8 +69,6 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
     else{
         const folder = options.isSimple?'simple':'stock'
         _path = path.join('data', folder, full_code + '.json')
-        await init_folder('data')
-        await init_folder(path.join('data', folder))
     }
     let success = true;
     let j2:CompanyResponse
@@ -82,7 +85,7 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
         await sleep(200)
     }
     if (success){
-        let output_len = (j2['output'] as any[]).length
+        let output_len = j2['output'].length
         let date = moment(new Date(j2['output'][0]['TRD_DD'])).add(1, 'second').toDate()
         let last_date = output_len ? date : moment(options.start_date).add(1, 'day').toDate()
         if (options.log_datetime)
@@ -126,8 +129,6 @@ export function is_index_stock(codename:string){
 
 export async function save_backtrade_json(result:any){
     const _path = path.join('data', 'backtrade')
-    await init_folder('data')
-    await init_folder(_path)
     if (result.title){
         await save_json(result, path.join(_path, `${result.title}.json`))
     }
@@ -135,13 +136,16 @@ export async function save_backtrade_json(result:any){
 
 export async function load_backtrade_json(filename?:string){
     const _path = path.join('data', 'backtrade')
-    await init_folder('data')
-    await init_folder(_path)
     if(filename){
         return await load_json(path.join(_path, filename))
     }else{
         return await file_list(_path)
     }
+}
+
+export async function delete_backtrade_json(filename:string){
+    const _path = path.join('data', 'backtrade', filename)
+    await delete_json(_path)
 }
 
 export function trdval_filter(data:any, trdval_days:number, min_trdval:number){
@@ -171,4 +175,36 @@ export const ModelToCandle = (item:(DailySimpleModel | DailyFullModel))=>{
         "volume":parseInt(item.ACC_TRDVOL.replace(/,/g, '')),
         "volumeVal":parseInt(item.ACC_TRDVAL.replace(/,/g, '')),
     }
+}
+
+export function cov_and_var(record2:Record<string, number>, record3:Record<string, number>, length:number, lastDateStr:string){
+    let j3_sum = 0.0
+    let j3_pow_sum = 0.0
+    let j2_sum = 0.0
+    let j2_pow_sum = 0.0
+    let cov_sum = 0.0
+    let cov_cnt = 0
+
+    for(let date=moment(new Date(lastDateStr));cov_cnt < length;date.add(-1, 'day')){
+        const dateStr = ddFormat(date.toDate())
+        const value2 = record2[dateStr], value3 = record3[dateStr]
+        if(value2!=undefined && value3!=undefined){
+            j2_sum += value2
+            j2_pow_sum += value2 * value2
+            j3_sum += value3
+            j3_pow_sum += value3 * value3
+            cov_sum += value2 * value3
+            cov_cnt += 1
+        }
+        if (dateStr == '2016/01/01')break;
+    }
+    if (cov_cnt && j2_sum != 0 && j3_sum != 0){
+        let j2_avg = j2_sum/cov_cnt
+        let j3_avg = j3_sum/cov_cnt
+        let cov = (cov_sum/cov_cnt) - j3_avg * j2_avg
+        let j2_var = j2_pow_sum/cov_cnt - j2_avg * j2_avg
+        let j3_var = j3_pow_sum/cov_cnt - j3_avg * j3_avg
+        return [cov, j2_var, j3_var]
+    }
+    return [null, null, null]
 }

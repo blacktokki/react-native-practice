@@ -3,8 +3,8 @@ import { Text, View, Button } from 'react-native';
 import { load_stock_json, save_last_date, sleep, ddFormat } from '../utils';
 import { CompanyResponse } from '../types';
 
-const MAX_LOAD_STOCK = 100
-const MAX_RELOAD_STOCK = 100
+const MAX_LOAD_STOCK = 200
+const MAX_RELOAD_STOCK = 200
 export const syncContext = {
     reload_stock:0,
     sync_lock:0,
