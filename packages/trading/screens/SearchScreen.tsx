@@ -6,14 +6,7 @@ import { DrawerParamList } from '@react-native-practice/core/types';
 import { TouchableOpacity ,Text, View, FlatList, TextInput, Button, ScrollView } from 'react-native';
 import {load_stocklist_json, STORAGE_KEY, ddFormat} from '../utils';
 import SyncSection, { syncContext } from '../sections/SyncSection';
-
-function Separator(){
-  return <View style={{
-    backgroundColor: '#000',
-    marginVertical: 30,
-    height: 1
-  }}/>
-}
+import Separator from '../components/Separator';
 
 export default function TabSearchScreen({
   navigation

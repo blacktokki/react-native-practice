@@ -4,7 +4,6 @@ import { DrawerParamList } from '@react-native-practice/core/types';
 import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
 import SectionDummy from '@react-native-practice/core/components/SectionDummy'
 import SliderSection from '../sections/SliderSection'
-import PortfolioSection from '../sections/PortfolioSection'
 import DraggableFlatListMain from '@react-native-practice/core/components/DraggableFlatListMain'
 import { cdf, laplace_cdf } from '../utils/mathutil'
 
@@ -16,7 +15,6 @@ export default function TabUtilScreen({
       header={[
         <Text style={styles.Panel_Button_Text}>{'Tab Two 1'} </Text>,
         <Text style={styles.Panel_Button_Text}>{'Tab Two 2'} </Text>,
-        <Text style={styles.Panel_Button_Text}>{'PortFolio'} </Text>,
         <Text style={styles.Panel_Button_Text}>{'Tab Two 4'} </Text>
       ]}
       dataCallback={()=>{}}
@@ -25,7 +23,6 @@ export default function TabUtilScreen({
     >
       <SliderSection renderText={(text)=>{return cdf(parseFloat(text) || 0.0).toString()}}/>
       <SliderSection renderText={(text)=>{return laplace_cdf(parseFloat(text) || 0.0).toString()}}/>
-      <PortfolioSection/>
       <SectionDummy
           title='Tab Two'
           pressText1='Go 1 screen!'

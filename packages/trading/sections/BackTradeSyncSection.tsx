@@ -82,7 +82,7 @@ async function backTrade(data_all:any[], setter:(data_all:any[])=>void, resultSe
         start_date:new Date(2016, 0, 1), end_date:new Date(2016, 0, 1), log_datetime:0, isSimple:1
       }).then(async(j2:CompanyResponse)=>{
           //trade start
-            const candles:Candle<any>[] = j2.output.map(ModelToCandle).reverse()
+          const candles:Candle<any>[] = j2.output.map(ModelToCandle).reverse()
           j2.output.splice(0, j2.output.length)
           candles.forEach((candle, index, array)=>{
             if (index > 0)
@@ -122,7 +122,7 @@ async function backTrade(data_all:any[], setter:(data_all:any[])=>void, resultSe
     new_data_all = data_all.map((item)=>item)
     context.sync_lock = 0
     const maxStocks = 4
-    // const covDate = 20
+    const covDate = 252
     let cash = 1000000
     let earn = 0
     let stocks:any = {}
@@ -145,7 +145,7 @@ async function backTrade(data_all:any[], setter:(data_all:any[])=>void, resultSe
         buys.forEach((v2)=>{
           buys.forEach((v3)=>{
             if (v2.rets&& v3.rets){
-              const cv = cov_and_var(v2.rets, v3.rets, 252, result[0])
+              const cv = cov_and_var(v2.rets, v3.rets, covDate, result[0])
               if(cv[0]&&cv[1]&&cv[2])
                 v2.minCorr = Math.min(v2.minCorr, cv[0]/Math.sqrt(cv[1] * cv[2]))
             }

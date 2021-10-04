@@ -12,7 +12,8 @@ export const MIN_TRDVAL = 2000000000
 export const REPORT_OFFSET2 = 0.5
 export const STORAGE_KEY = {
     'last_date': 'RNP_LAST_DATE',
-    'condition': 'RNP_CONDITION'
+    'condition': 'RNP_CONDITION',
+    'portfolio': 'RNP_PORTFOLIO'
 }
 
 init_folder('data').then(()=>{

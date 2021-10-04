@@ -2,6 +2,7 @@ import UtilScreen from './UtilScreen'
 import SearchScreen from './SearchScreen'
 import DetailScreen from './DetailScreen'
 import BackTradeScreen from './BackTradeScreen'
+import PortfolioScreen from './PortfolioScreen'
 export default {
     SearchScreen:{
         component: SearchScreen,
@@ -12,6 +13,12 @@ export default {
         component:  BackTradeScreen,
         title: 'Tab BackTrade Title',
         url: 'backtrade'
+    },
+    PortfolioScreen:{
+        component:  PortfolioScreen,
+        title: 'Tab Portfolio Title',
+        url: 'portfolio',
+        params: {buys: 'asd', sells: 'asd'}
     },
     DetailScreen:{
         component: DetailScreen,
@@ -26,6 +33,5 @@ export default {
         component: UtilScreen,
         title: 'Tab Util Title',
         url: 'util',
-        params: {optionStd: 'asd'}
     },
 }

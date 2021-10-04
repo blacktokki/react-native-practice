@@ -6,14 +6,7 @@ import ConditionSection from '../sections/ConditionSection';
 import BackTradeSyncSection, {backTradeContext, BackTradeResult, BackTradeRow} from '../sections/BackTradeSyncSection';
 import { delete_backtrade_json, load_backtrade_json, load_stocklist_json, save_backtrade_json } from '../utils';
 import { useHeaderHeight } from '@react-navigation/stack';
-
-function Separator(){
-  return <View style={{
-    backgroundColor: '#000',
-    marginVertical: 30,
-    height: 1
-  }}/>
-}
+import Separator from '../components/Separator';
 
 export default function TabBackTradeScreen({
   navigation
@@ -121,7 +114,7 @@ export default function TabBackTradeScreen({
             <Text>매도</Text>
             {resultRow[1].sells.map((v, k)=>(<TouchableOpacity key={k} onPress={()=>{navigateDetail( v.stock['full_code'])}}>
               <Text>{v.stock['full_code']}:{v.stock['codeName']}:{v.candle.close}원:({v.minCorr})</Text>
-              </TouchableOpacity>  
+              </TouchableOpacity>
             ))}
             <Separator/>
             <Text>매수</Text>
@@ -140,6 +133,13 @@ export default function TabBackTradeScreen({
             {Object.entries<any>(resultRow[1].currentStocks).map((v, k)=>(<TouchableOpacity key={k} onPress={()=>{navigateDetail(v[0])}}>
             <Text>{v[0]}:{v[1][0]}</Text>
             </TouchableOpacity>))}
+            <Button title={'go portfolio'} onPress={()=>{navigation.navigate("Portfolio", {
+              screen: 'PortfolioScreen',
+              params: {
+                buys: resultRow[1].buys.map((v)=>`${v.stock['full_code']}:${v.stock['codeName']}`).join(','),
+                sells:resultRow[1].sells.map((v)=>`${v.stock['full_code']}:${v.stock['codeName']}`).join(','),
+              }
+          })}}/>
             <Button title={'close'} onPress={()=>{setPopup({});setPopupHeight(0)}}/>
           </View>
         ):undefined}
