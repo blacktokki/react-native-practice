@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Text, ScrollView, FlatList, TextInput, Button, Dimensions, Platform } from 'react-native';
+import { StyleSheet, Text, ScrollView, TextInput, Button, Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import { StackScreenProps } from '@react-navigation/stack';
 import { DrawerParamList } from '@react-native-practice/core/types';

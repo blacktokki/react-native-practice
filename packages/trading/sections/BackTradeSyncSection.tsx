@@ -2,7 +2,7 @@ import * as React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, Text, Button } from 'react-native';
 import { load_stock_json, ModelToCandle, sleep, STORAGE_KEY, ddFormat, cov_and_var } from '../utils';
-import { CompanyResponse } from '../types';
+import { CompanyInfoBlock, CompanyResponse } from '../types';
 import { Candle } from '../components/chart/CandleType';
 import hloc from '../components/indices/hloc';
 import volume from '../components/indices/volume';
@@ -18,7 +18,7 @@ export const backTradeContext = {
 }
 
 type Result = {
-  stock:any,
+  stock:CompanyInfoBlock,
   candle:Candle<any>,
   rets?:Record<string, number>,
 }
@@ -37,7 +37,7 @@ export type BackTradeResult = {
   title?:string
 }
 
-async function backTrade(data_all:any[], setter:(data_all:any[])=>void, resultSetter:(result:BackTradeResult)=>void, show_log:number, context:typeof backTradeContext){
+async function backTrade(data_all:CompanyInfoBlock[], setter:(data_all:CompanyInfoBlock[])=>void, resultSetter:(result:BackTradeResult)=>void, show_log:number, context:typeof backTradeContext){
   let condition:any|undefined = undefined;
   try{
     condition = JSON.parse(await AsyncStorage.getItem(STORAGE_KEY['condition']) as string)
@@ -56,12 +56,12 @@ async function backTrade(data_all:any[], setter:(data_all:any[])=>void, resultSe
     })[] = []
     const startDate:Date = condition.filter?.startDate || new Date(2016, 0, 1)
     const maxPrice = 25000
-    data_all.forEach((item)=>{item['traded'] = false})
-    let new_data_all: any[] = data_all.map((item)=>item)
+    data_all.forEach((item)=>{item.traded = false})
+    let new_data_all = data_all.map((item)=>item)
     setter(new_data_all)
     resultSetter({})
     for (const [i, d] of data_all.entries()){
-      let full_code = d['full_code']
+      let full_code = d.full_code
       context.reload_stock += 1
       while (context.sync_lock==2)
         await sleep(1000)
@@ -99,9 +99,9 @@ async function backTrade(data_all:any[], setter:(data_all:any[])=>void, resultSe
             if (condition.config?.ii)ii.setData(candle, condition.config.ii)
             if (condition.config?.bolmfiii)bolmfiii.setData(candle, condition.config.bolmfiii)
           })
-          data_all[i]['traded'] = true
+          data_all[i].traded = true
           if(show_log)
-            console.log(i, d['codeName'])
+            console.log(i, d.codeName)
           const rets = candles.reduce((prev, value)=>{prev[value.date] = value.prev?(value.close /value.prev.close -1):0; return prev}, {} as Record<string, number>)
           candles.forEach((candle, index)=>{
             if (candle.prev?.extra.bolmfiii.hold != candle.extra.bolmfiii.hold && new Date(candle.date).valueOf() >= startDate.valueOf()){
@@ -170,10 +170,10 @@ async function backTrade(data_all:any[], setter:(data_all:any[])=>void, resultSe
   }
 }
 
-export default function BackTradeSyncSection(props:{data:any[], setData:(data_all:any[])=>void,  setResult:(result:BackTradeResult)=>void, context:typeof backTradeContext}) {  
+export default function BackTradeSyncSection(props:{data:CompanyInfoBlock[], setData:(data_all:CompanyInfoBlock[])=>void,  setResult:(result:BackTradeResult)=>void, context:typeof backTradeContext}) {  
   const syncLength = React.useMemo(()=>{
       return [
-          props.data.filter((item)=>item['traded']).length,
+          props.data.filter((item)=>item.traded).length,
           props.data.length,
       ]
     }, [props.data])

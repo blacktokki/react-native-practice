@@ -33,3 +33,12 @@ export type CompanyResponse = {
     'CURRENT_DATETIME':string
 }
 
+export type CompanyInfoBlock = {
+    marketCode:string
+    full_code:string
+    codeName:string
+    lastDate:string
+    short_code:string
+    checked?:boolean
+    traded?:boolean
+}

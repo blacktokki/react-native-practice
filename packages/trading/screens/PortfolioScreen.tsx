@@ -2,13 +2,12 @@ import * as React from 'react';
 import { StackScreenProps } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DrawerParamList } from '@react-native-practice/core/types';
-import { TouchableOpacity ,Text, View, FlatList, TextInput, Button, ScrollView, StyleSheet } from 'react-native';
+import { TouchableOpacity ,Text, View, TextInput, Button, ScrollView, StyleSheet } from 'react-native';
 
-import { cov_and_var, ddFormat, delete_backtrade_json, load_backtrade_json, load_stocklist_json, load_stock_json, ModelToCandle, save_backtrade_json, STORAGE_KEY } from '../utils';
+import { cov_and_var, ddFormat, load_stock_json, ModelToCandle, STORAGE_KEY } from '../utils';
 import Separator from '../components/Separator';
 import { Candle } from '../components/chart/CandleType';
 import volume from '../components/indices/volume';
-import { bundledAssets } from 'expo-file-system';
 
 type Company={
     full_code: string,

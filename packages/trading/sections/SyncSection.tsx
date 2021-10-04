@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { Text, View, Button } from 'react-native';
-import { load_stock_json, save_last_date, sleep, ddFormat } from '../utils';
-import { CompanyResponse } from '../types';
+import moment from 'moment'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { load_stock_json, save_last_date, sleep, ddFormat, STORAGE_KEY } from '../utils';
+import { CompanyInfoBlock, CompanyResponse } from '../types';
 
 const MAX_LOAD_STOCK = 200
 const MAX_RELOAD_STOCK = 200
@@ -10,16 +12,16 @@ export const syncContext = {
     sync_lock:0,
 }
 
-async function load_stock(data_all:any[], endDate:Date, setter:(data_all:any[])=>void, show_log:number, context:typeof syncContext){
+async function load_stock(data_all:CompanyInfoBlock[], endDate:Date, setter:(data_all:CompanyInfoBlock[])=>void, show_log:number, context:typeof syncContext){
   if (context.sync_lock == 0){
     let current_load_stock = 0
     context.sync_lock = 1
     context.reload_stock = 0
-    data_all.forEach((item)=>{item['checked'] = false})
-    let new_data_all: any[] = data_all.map((item)=>item)
+    data_all.forEach((item)=>{item.checked = false})
+    let new_data_all: CompanyInfoBlock[] = data_all.map((item)=>item)
     setter(new_data_all)
     for (const [i, d] of data_all.entries()){
-      let full_code = d['full_code']
+      let full_code = d.full_code
       context.reload_stock += 1
       while (context.sync_lock==2)
         await sleep(1000)
@@ -41,16 +43,16 @@ async function load_stock(data_all:any[], endDate:Date, setter:(data_all:any[])=
         start_date:new Date(2016, 0, 1), end_date:endDate, log_datetime:0, isSimple:1
       }).then(async(j2:CompanyResponse)=>{
           if(show_log){  
-            if (j2['_status'] == 0){
+            if (j2._status == 0){
               console.log(i, d)
-              console.log(j2['output'].length?j2['output'][0] : null)
+              console.log(j2.output.length?j2.output[0] : null)
             }
             else{
-              console.log(i, d['codeName'])
+              console.log(i, d.codeName)
             }
           }
-          data_all[i]['checked'] = true
-          data_all[i]['lastDate'] = j2['output'][0].TRD_DD || data_all[i]['lastDate'] || ddFormat(endDate)
+          data_all[i].checked = true
+          data_all[i].lastDate = j2.output[0].TRD_DD || data_all[i].lastDate || ddFormat(endDate)
           current_load_stock -= 1
       })
     }
@@ -64,19 +66,36 @@ async function load_stock(data_all:any[], endDate:Date, setter:(data_all:any[])=
   }
 }
 
-export default (props:{data:any[], lastDate:Date, setData:(data_all:any[])=>void, setLastDate:(date:Date)=>void, context:typeof syncContext}) =>{
+export default (props:{data:CompanyInfoBlock[], setData:(data_all:CompanyInfoBlock[])=>void, context:typeof syncContext}) =>{
+  const [lastDate, setLastDate] = React.useState<Date>(new Date())
+  const setLastDateFull = React.useCallback((date:Date) =>{
+    setLastDate(date)
+    AsyncStorage.setItem(STORAGE_KEY['last_date'], ddFormat(date))
+  }, [])
     const syncLength = React.useMemo(()=>{
         return [
-            props.data.filter((item)=>(new Date(item['lastDate']) >= props.lastDate)).length, 
-            props.data.filter((item)=>item['checked']).length,
+            props.data.filter((item)=>(new Date(item.lastDate) >= lastDate)).length, 
+            props.data.filter((item)=>item.checked).length,
             props.data.length
         ]
-      }, [props.lastDate, props.data])
+      }, [lastDate, props.data])
+
+    React.useEffect(()=>{
+      AsyncStorage.getItem(STORAGE_KEY['last_date']).then((value)=>{
+        let date = value?new Date(value):lastDate
+        setLastDateFull(date)
+      })
+    },[])
     return (
-        <View>    
+        <View>
+          <View style={{flexDirection:'row'}}>
+        <Text>Last Date: {ddFormat(lastDate)}</Text>
+        <Button title={"down"} onPress={()=>{setLastDateFull(moment(lastDate).add(-1,'day').toDate())}}/>
+        <Button title={"up"} onPress={()=>{setLastDateFull(moment(lastDate).add(1,'day').toDate())}}/>
+      </View>
           <Button title={"Sync!"} onPress={
               props.context.sync_lock==0?
-              ()=>{load_stock(props.data, props.lastDate, props.setData, 1, props.context)}:
+              ()=>{load_stock(props.data, lastDate, props.setData, 1, props.context)}:
               ()=>{}}/>
           <Text>({syncLength[0]}/{syncLength[2]})({syncLength[1]}/{syncLength[2]})</Text>
         </View>
