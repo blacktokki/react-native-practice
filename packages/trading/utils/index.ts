@@ -178,6 +178,28 @@ export const ModelToCandle = (item:(DailySimpleModel | DailyFullModel))=>{
     }
 }
 
+export function avg_and_var(record2:Record<string, number>, length:number, lastDateStr:string){
+    let j2_sum = 0.0
+    let j2_pow_sum = 0.0
+    let cnt = 0
+    for(let date=moment(new Date(lastDateStr));cnt < length;date.add(-1, 'day')){
+        const dateStr = ddFormat(date.toDate())
+        const value2 = record2[dateStr]
+        if(value2!=undefined){
+            j2_sum += value2
+            j2_pow_sum += value2 * value2
+            cnt +=1
+        }
+        if (dateStr == '2016/01/01')break;
+    }
+    if (cnt && j2_sum != 0){
+        let j2_avg = j2_sum/cnt
+        let j2_var = j2_pow_sum/cnt - j2_avg * j2_avg
+        return [j2_avg, j2_var]
+    }
+    return [null, null]
+}
+
 export function cov_and_var(record2:Record<string, number>, record3:Record<string, number>, length:number, lastDateStr:string){
     let j3_sum = 0.0
     let j3_pow_sum = 0.0
