@@ -27,7 +27,28 @@ companyApi.interceptors.request.use(function (config) {
     })
   })
 
+ export const INDEX_INFO = [
+    {
+        codeName:'코스피',
+        full_code:'_KOSPI',
+        lastDate:'',
+        marketCode: 'STK',
+        short_code: '1'
+    },
+    {
+        codeName:'코스닥',
+        full_code:'_KOSDAQ',
+        lastDate:'',
+        marketCode: 'KSQ',
+        short_code: '2'
+    }
+]
+
 export async function request_company(full_code:string, options:{start_date:Date, end_date:Date}={start_date:new Date(1990,1,1), end_date:new Date(2100,1,1)}){
+  const index = INDEX_INFO.find(v=>v.full_code == full_code)
+  if (index){
+      return await request_index(index.short_code, options)
+    }
     const params = new URLSearchParams();
     let data = {
         'bld': 'dbms/MDC/STAT/issue/MDCSTAT23902',
@@ -53,4 +74,35 @@ export async function request_company(full_code:string, options:{start_date:Date
     _data2 = null
     */
     return _data
+}
+
+async function request_index(code:string, options:{start_date:Date, end_date:Date}={start_date:new Date(1990,1,1), end_date:new Date(2100,1,1)}){
+  const params = new URLSearchParams();
+  let data = {
+      'bld': 'dbms/MDC/STAT/standard/MDCSTAT00301',
+      'indIdx': code,
+      'indIdx2': '001',
+      'strtDd': dd_format(options.start_date),
+      'endDd': dd_format(options.end_date),
+      'share': '1',
+      'money': '1',
+      'csvxls_isNo': 'false',
+  }
+  Object.keys(data).map(key=>params.append(key, (data as any)[key]))
+  const _data  = (await companyApi.post('http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd', params)).data
+  const mapper:[string, string][] = [
+    ['UPDN_RATE', 'FLUC_RT'],
+    ['CLSPRC_IDX', 'TDD_CLSPRC'], 
+    ['OPNPRC_IDX', 'TDD_OPNPRC'],
+    ['HGPRC_IDX', 'TDD_HGPRC'],
+    ['LWPRC_IDX', 'TDD_LWPRC'],
+    ['PRV_DD_CMPR', 'CMPPRVDD_PRC']
+  ]
+  _data['output'].forEach((d: any) => {
+    mapper.forEach((m)=>{
+      d[m[1]] = d[m[0]]
+      delete d[m[0]]
+    })
+  });
+  return _data
 }

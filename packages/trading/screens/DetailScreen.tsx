@@ -17,9 +17,10 @@ export default function TabDetailScreen({
     const CoinData = React.useMemo(()=>data?data.output.map(ModelToCandle).reverse():[], [data])
     const shortCode = React.useMemo(()=>(fullCode || '').slice(3,9), [fullCode])
     const stockPlusUrl = React.useMemo(()=>'stockplus://viewStock?code=A'+ shortCode + '&tabIndex=0&marketIndex=0', [shortCode])
-    if (fullCode !=  route.params?.full_code){
-        load_stock_json(route.params?.full_code).then((_data)=>{
-            setFullCode(route.params?.full_code)
+    let nextFullCode = route.params?.full_code || '_KOSPI'
+    if (fullCode != nextFullCode){
+        load_stock_json(nextFullCode).then((_data)=>{
+            setFullCode(nextFullCode)
             setData(_data)
         })
     }
@@ -27,7 +28,7 @@ export default function TabDetailScreen({
     <ScrollView>
         <Text>{fullCode}</Text>
         <CoinBasePro data={CoinData} width={window.width}/>
-        {Platform.OS == 'android' && shortCode && Linking.canOpenURL(stockPlusUrl)?(
+        {Platform.OS == 'android' && shortCode && shortCode.length > 5 && Linking.canOpenURL(stockPlusUrl)?(
             <Button title={shortCode} onPress={()=>{Linking.openURL(stockPlusUrl)}}></Button>
         ):undefined}
     </ScrollView>)

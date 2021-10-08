@@ -1,7 +1,7 @@
 import path from 'path'
 import moment from 'moment'
 import {load_json, save_json, exists_file, init_folder, file_list, delete_json} from './jsonio'
-import {request_company, request_company_list } from './requestutil'
+import {request_company, request_company_list, INDEX_INFO } from './requestutil'
 import { CompanyInfoBlock, CompanyResponse, DailyFullModel, DailySimpleModel } from '../types'
 import { saveCompress, loadCompress } from './compress'
 
@@ -37,7 +37,7 @@ export async function load_stocklist_json(){
     //filtering stock!
     const data_all = (j['block1'] as CompanyInfoBlock[]).filter((d) =>{
         return ['KSQ', 'STK'].indexOf(d.marketCode) >= 0 && d.full_code[2] == '7' && d.full_code.substring(8, 11) == '000' && d.codeName.search('스팩') < 0 && ! is_index_stock(d.codeName)
-    })
+    }).concat(INDEX_INFO)
     const _path2 = path.join('data', 'last_date.json')
     if (await exists_file(_path2)){
         const last_dates = await load_json(_path2)
