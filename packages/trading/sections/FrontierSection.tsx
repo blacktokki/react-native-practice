@@ -1,123 +1,109 @@
+
 import * as React from 'react';
-import { useRoute } from '@react-navigation/native';
-import { Text, View } from '@react-native-practice/core/components/Themed';
-import { StyleSheet, TextInput, Button } from 'react-native';
-// import { Line, Svg } from "react-native-svg";
-import { FlatList } from 'react-native-gesture-handler';
+import { avg_and_var, cov_and_var, ddFormat } from '../utils';
+import { Candle } from '../components/chart/CandleType';
+import { CompanyInfoBlock, CompanyInfoHold } from '../types';
+import useResizeWindows from  '@react-native-practice/core/hooks/useResizeWindow';
+import Plot from '../components/chart/Plot';
 
 
-type ResultSet = {
-    results:{
-        std:number,
-        ratio:number
-    }[],
-    risk:number
+export type FronTierPrice = {
+    candles:Candle<any>[],
+    rets:Record<string, number>,
+    price:number
+    avgRatio:number|null,
+    corrs?:Record<string, number>,
 }
 
-export default function SectionDummy(props:{}){
-    const [fixStd, setFixStd] = React.useState('')
-    const [optionStd, setOptionStd] = React.useState('')
-    const [optionCount, setOptionCount] = React.useState(0)
-    const [size, setSize] = React.useState<{height:number|undefined}>({height:undefined});
-    const [results, setResults] = React.useState<ResultSet[]>([])
-    const route = useRoute()
-    const onPress = React.useCallback(()=>{
-        let fixSplit = (fixStd.length?fixStd.split(','):[]).map(value=>parseFloat(value))
-        let optionSplit = optionStd.length?optionStd.split(','):[]
-        if (fixSplit.length + optionSplit.length == 0 || optionCount==0)
-            return []
-        let optionCountReal = Math.min(optionCount, optionSplit.length)
-        let resultSets:ResultSet[] = []
-        for(let i=0;i<10000;i++){
-            let ratioCount = 0
-            let ratios:number[] = []
-            for(let j=0;j<fixSplit.length + optionCountReal;j++){
-                let r = (1 - ratioCount) * (j==fixSplit.length + optionCountReal -1?1:Math.random())
-                ratioCount += r
-                ratios.push(r)
+type FronTierInput = {
+    holds:(CompanyInfoHold & FronTierPrice)[], 
+    buys:(CompanyInfoBlock & FronTierPrice)[], 
+    config: {covDate:number, totalCash:number, maxHolds:number}
+}
+
+type FronTierOutput = {
+    stocks:Record<string, number>,
+    ret:number,
+    lisk:number
+}
+
+const frontier=({holds, buys, config}:FronTierInput)=>{
+    const willHold = holds.concat(buys as any)
+    willHold.forEach((v)=>{
+        v.corrs = {}
+        v.avgRatio = avg_and_var(v.rets, config.covDate, ddFormat(new Date()))[0]
+    })
+    willHold.forEach((v2)=>{
+        willHold.forEach((v3)=>{
+                const cv = cov_and_var(v2.rets, v3.rets, config.covDate, ddFormat(new Date()))
+                if(cv[0]&&cv[1]&&cv[2] && v2.corrs){
+                    v2.corrs[v3.full_code] = cv[0]/Math.sqrt(cv[1] * cv[2])
             }
-            let tmpSplit = optionSplit.map(value=>parseFloat(value))
-            let results2 = fixSplit.map((value, index)=>({
-                std: value,
-                ratio: ratios[index]
-            }))
-            for(let j=0;j<optionCountReal;j++){
-                let idx = Math.floor(Math.random() * tmpSplit.length)
-                results2.push({
-                    std:tmpSplit[idx],
-                    ratio: ratios[j + fixSplit.length]
-                })
-                tmpSplit.splice(idx, 1);
-            }
-            resultSets.push({results:results2.sort((a, b)=>a.std > b.std?1:-1), risk:Math.sqrt(results2.reduce((prev, value)=>prev + (value.std * value.std * value.ratio * value.ratio), 0))})
+        })
+    })
+    
+    const resultSets:FronTierOutput[] = []
+    for(let i=0;i<30000;i++){
+        let ratioCount = 0
+        const ratios = holds.reduce((prev, v)=>{
+            const ratio = (v.count || 0) * v.price / config.totalCash
+            ratioCount += ratio
+            prev[v.full_code] = ratio
+            return prev
+        }, {} as Record<string, number>)
+        const localBuys = buys.slice(0)
+        while(localBuys.length + Object.keys(ratios).length > config.maxHolds){
+            localBuys.splice(Math.floor(Math.random() * localBuys.length), 1)
         }
-        setResults(resultSets.sort((a, b)=>a.risk > b.risk?1:-1).slice(0, 10))
-    }, [fixStd, optionStd, optionCount])
-    const renderItem = React.useCallback(({item}:{item:ResultSet})=>{
-        return (
-        <View style={styles.commonOption}>
-            <Text>{item.risk.toFixed(2)} </Text>
-            {item.results.map((item2, index2)=>(<Text key={index2}>({item2.std}:{item2.ratio.toFixed(2)}) </Text>))}
-        </View>)
-    },[])
-    React.useEffect(()=>{
-        setOptionStd((route.params as any)?.optionStd)
-    }, [route.params])
-    return (
-    <View style={styles.commonContainer}>
-        <View style={styles.commonOption}>
-            <Text>고정종목 표준편차</Text>
-            <TextInput
-                multiline
-                onChangeText={setFixStd}
-                value={fixStd}
-                style={[styles.commonText, {height:size.height}]}
-                onContentSizeChange={(e)=>{setSize(e.nativeEvent.contentSize)}}
-            />
-        </View>
-        <View style={styles.commonOption}>
-            <Text>선택종목 표준편차</Text>
-            <TextInput
-                multiline
-                onChangeText={setOptionStd}
-                value={optionStd}
-                style={[styles.commonText, {height:size.height}]}
-                onContentSizeChange={(e)=>{setSize(e.nativeEvent.contentSize)}}
-            />
-        </View>
-        <View style={styles.commonOption}>
-            <Text>선택수</Text>
-            <TextInput
-                multiline
-                onChangeText={(value)=>{setOptionCount(parseInt(value)|| 0)}}
-                value={optionCount.toString()}
-                style={[styles.commonText, {height:size.height}]}
-                onContentSizeChange={(e)=>{setSize(e.nativeEvent.contentSize)}}
-            />
-        </View>
-        <Button title={'execute'} onPress={onPress}/>
-        <View style={styles.commonOption}>
-            <FlatList
-                data={results}
-                renderItem={renderItem}
-            />
-        </View>
-  </View>
-    )
+        localBuys.forEach((v, j)=>{
+            let r= v.price / config.totalCash
+            ratioCount += r
+            ratios[v.full_code] = r
+            r = (1 - ratioCount) * (j==localBuys.length -1?1:Math.random())
+            ratioCount += r
+            ratios[v.full_code] += r
+        })
+
+        resultSets.push({
+            stocks:ratios,
+            ret:config.covDate * willHold.reduce((prev, v)=>{prev += (v.avgRatio||0) * (ratios[v.full_code] || 0); return prev}, 0),
+            lisk:willHold.reduce((prev, v)=>{
+                prev += willHold.reduce((prev2, v2)=>{
+                    const value = v.corrs
+                    prev2 += (value?value[v2.full_code]:0 || 0) * (ratios[v2.full_code] || 0)
+                    return prev2
+                }, 0) * (ratios[v.full_code] || 0)
+                return prev
+            }, 0)
+        })
+    }
+    return resultSets.sort((a, b)=>a.lisk&&b.lisk?(a.ret/a.lisk<b.ret/b.lisk?1:-1):0)
 }
 
-const styles = StyleSheet.create({
-    commonContainer: {
-        minWidth: 400,
-        alignItems: 'center',
-        marginHorizontal: 50,
-      },
-      commonOption: {
-        flexDirection:'row'
-      },
-      commonText: {
-        fontSize: 17,
-        lineHeight: 24,
-        textAlign: 'center',
-      }
-  });
+export type FrontierFunction = typeof frontier
+
+export default ({frontierRef}:{frontierRef:React.MutableRefObject<FrontierFunction|undefined>})=>{
+    const [output, setOutput] = React.useState<FronTierOutput[]>([])
+    const [plot, setPlot] = React.useState({
+        data:[] as {fill:string, avg:number, std:number}[],
+        domainX: [0, 0] as [number, number],
+        domainY: [0, 0] as [number, number]
+    })
+    frontierRef.current = (input: FronTierInput) => {
+        const result = frontier(input)
+        setOutput(result)
+        const data = result.map(v=>({fill:'orange', avg:v.ret, std:v.lisk})).slice(0, result.length/100)
+        const avgOnly = data.map((v)=>v.avg)
+        const stdOnly = data.map((v)=>v.std)
+        const mins = data.length?Math.min(...stdOnly, ...avgOnly):0
+        const maxs = data.length?Math.max(...stdOnly, ...avgOnly):0
+        setPlot({
+            data:data,
+            domainX: [mins -0.1, maxs + 0.2],
+            domainY: [mins -0.1, maxs + 0.2]
+        })
+        return result
+    }
+    const window = useResizeWindows()
+    return <Plot size={[window.width * 0.5, window.width * 0.5]} {...plot} showText={false} r={2}/>
+}

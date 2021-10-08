@@ -60,8 +60,8 @@ export default function BackTradeDetailSection({resultRow, popup, navigation, se
         <Button title={'go portfolio'} onPress={()=>{navigation.navigate("Portfolio", {
           screen: 'PortfolioScreen',
           params: {
-            buys: resultRow[1].buys.map((v)=>`${v.stock['full_code']}:${v.stock['codeName']}`).join(','),
-            sells:resultRow[1].sells.map((v)=>`${v.stock['full_code']}:${v.stock['codeName']}`).join(','),
+            buys: resultRow[1].buys.map((v)=>v.stock['full_code']).join(','),
+            sells:resultRow[1].sells.map((v)=>v.stock['full_code']).join(','),
           }
       })}}/>
         <Button title={'close'} onPress={()=>{setPopup({});setPopupHeight(0)}}/>

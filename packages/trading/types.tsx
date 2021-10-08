@@ -42,3 +42,5 @@ export type CompanyInfoBlock = {
     checked?:boolean
     traded?:boolean
 }
+
+export type CompanyInfoHold = CompanyInfoBlock & {count:number}

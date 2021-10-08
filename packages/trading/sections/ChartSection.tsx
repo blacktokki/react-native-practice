@@ -14,7 +14,7 @@ import bolmfi from "../components/indices/bolmfi";
 import ii from "../components/indices/ii";
 import bolii from "../components/indices/bolii";
 // import bolmfiii from "./indices/bolmfiii";
-import Plot from "../components/chart/Plot"
+import {CandlePlot as Plot} from "../components/chart/Plot"
 
 const styles = StyleSheet.create({
   container: {
