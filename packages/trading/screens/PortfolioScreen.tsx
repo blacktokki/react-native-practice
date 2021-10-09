@@ -1,17 +1,18 @@
 import * as React from 'react';
 import { StackScreenProps } from '@react-navigation/stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DrawerParamList } from '@react-native-practice/core/types';
 import { TouchableOpacity ,Text, View, TextInput, Button, ScrollView, StyleSheet } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
-import { load_stocklist_json, load_stock_json, ModelToCandle, STORAGE_KEY } from '../utils';
+import { load_stocklist_json, load_stock_json, ModelToCandle } from '../utils';
 import Separator from '../components/Separator';
 import { CompanyInfoBlock, CompanyInfoHold } from '../types';
 import { Candle } from '../components/chart/CandleType';
 import volume from '../components/indices/volume';
 import FrontierSection, { FrontierFunction, FronTierPrice } from '../sections/FrontierSection';
+import FileManagerSection from '../sections/FileManagerSection';
 
 type Portfolio = {
+    title:string,
     holds:CompanyInfoHold[],
     maxHolds:number
     covDate:number
@@ -19,6 +20,7 @@ type Portfolio = {
 }
 
 const defaultPortfolio:Portfolio = {
+    title: 'portfolio',
     holds:[],
     maxHolds:4,
     covDate:252,
@@ -64,6 +66,7 @@ export default function TabPortfolioScreen({
     const [companyMode, setCompanyMode] = React.useState<'buys'|'sells'>('buys')
     const [priceRecord, setPriceRecord] = React.useState<Record<string, FronTierPrice>>({})
     const [portfolio, setPortfolio] = React.useState<Portfolio>(defaultPortfolio)
+    const [nextTitle, setNextTitle] = React.useState(defaultPortfolio.title)
     const [nextHolds, setNextHolds] = React.useState<CompanyInfoHold[]>(defaultPortfolio.holds)
     const [nextMaxHolds, setNextMaxHolds] = React.useState<number>(defaultPortfolio.maxHolds)
     const [nextCovDate, setNextCovDate] = React.useState<number>(defaultPortfolio.covDate)
@@ -95,7 +98,6 @@ export default function TabPortfolioScreen({
         setNextTotalCash(portfolio.totalCash)
         if(commit){
             setPortfolio(portfolio)
-            AsyncStorage.setItem(STORAGE_KEY['portfolio'], JSON.stringify(portfolio))
         }
       }, [])
     const autoTrade = React.useCallback(()=>{
@@ -112,6 +114,7 @@ export default function TabPortfolioScreen({
             buys.filter(d=>result.stocks[d.full_code]).forEach((d)=>{
                 holds.push({
                     ...d,
+                    price: priceRecord[d.full_code].price,
                     count:Math.floor(nextTotalCash * result.stocks[d.full_code] /priceRecord[d.full_code].price),
                 })
             })
@@ -119,16 +122,11 @@ export default function TabPortfolioScreen({
         }
     }, [buySignal, sellSignal, portfolio, nextTotalCash, nextCovDate, nextMaxHolds, priceRecord, frontierRef.current])
     const renderItemComponent = React.useCallback((item:CompanyInfoHold | CompanyInfoBlock, index:number, mode:'buys'|'sells')=>{
+        const _item = (item as CompanyInfoHold)
         return <TouchableOpacity key={index} onPress={()=>{setCompanyMode(mode);setCompanyCode(item.full_code);setCompanyPrice(priceRecord[item.full_code].price)}}>
-            <Text>{item.full_code}:{item.codeName}:{priceRecord[item.full_code].price}원</Text>
-            {(item as CompanyInfoHold).count?<Text>{(item as CompanyInfoHold).count}주 {priceRecord[item.full_code].price * (item as CompanyInfoHold).count}원</Text>:undefined}
+            <Text>{item.full_code}:{item.codeName}:{priceRecord[item.full_code].price}원 {_item.price?`(${_item.price}원)`:''}</Text>
+            {_item.count && _item.price?<Text>{_item.count}주 {priceRecord[item.full_code].price * _item.count}원 ({_item.price * _item.count}원)</Text>:undefined}
         </TouchableOpacity>
-    }, [])
-    React.useEffect(()=>{
-        AsyncStorage.getItem(STORAGE_KEY['portfolio']).then((value)=>{
-            const pf:Portfolio = value?JSON.parse(value):portfolio
-            companiesToFrontier(pf.holds).then(()=>setPortfolioFull(pf, true))
-        })
     }, [])
     React.useEffect(()=>{
         paramsToFrontier(route.params?.buys).then(setBuySignal)
@@ -155,7 +153,7 @@ export default function TabPortfolioScreen({
                 <Picker.Item label="매도신호" value="sells" />
             </Picker>
             <TextInput style={styles.TextInput} onChangeText={setCompanyCode} value={companyCode}/>
-            <TextInput style={styles.TextInput} onChangeText={(text)=>setCompanyPrice(parseInt(text))} value={companyPrice.toString()}/>
+            <TextInput style={styles.TextInput} onChangeText={(text)=>setCompanyPrice(parseFloat(text))} value={companyPrice.toString()}/>
             <Button title={'추가'} onPress={()=>{
                 codeToFrontier(companyCode).then((comp)=>{
                     priceRecord[companyCode] = comp
@@ -176,6 +174,14 @@ export default function TabPortfolioScreen({
                 r[companyCode].price = companyPrice;
                 setPriceRecord(r)
             }}/>
+            <Button title={'평단가 수정'} onPress={()=>{
+                const newNextHolds = nextHolds.slice(0)
+                const nextHoldsIndex = newNextHolds.findIndex((v)=>v.full_code == companyCode)
+                if(nextHoldsIndex>=0){
+                    newNextHolds[nextHoldsIndex].price = companyPrice
+                }
+                setNextHolds(newNextHolds)
+            }}/>
             <Button title={'조회'} onPress={()=>{navigation.navigate("Detail", {
                 screen: 'DetailScreen',
                 params: {full_code: companyCode}
@@ -186,14 +192,16 @@ export default function TabPortfolioScreen({
             <Button title={companyMode=='buys'?'매수':'매도'} onPress={()=>{
                 const newNextHolds = nextHolds.slice(0)
                 const nextHoldsIndex = newNextHolds.findIndex((v)=>v.full_code == companyCode)
-                const nextHolldsCount = newNextHolds[nextHoldsIndex].count || 0
+                const nextHolldsCount = nextHoldsIndex>=0?newNextHolds[nextHoldsIndex].count:0
                 if (companyMode == 'buys' && companyCount>0){
                     const company = signal.buys.find((d)=>d.full_code == companyCode)
                     if(nextHoldsIndex>=0){
+                            const beforePrice = nextHolldsCount * newNextHolds[nextHoldsIndex].price
                             newNextHolds[nextHoldsIndex].count = nextHolldsCount + companyCount
+                            newNextHolds[nextHoldsIndex].price = (beforePrice + companyCount * companyPrice) / newNextHolds[nextHoldsIndex].count
                     }
                     else if(company){
-                        newNextHolds.push({...company, count:companyCount})
+                        newNextHolds.push({...company, count:companyCount, price: companyPrice})
                     }
                 }
                 if (companyMode == 'sells' && nextHoldsIndex>=0){
@@ -209,6 +217,7 @@ export default function TabPortfolioScreen({
             <View style={{flex:0.5}}>
                 {portfolio.holds.map((item, index)=>renderItemComponent(item, index, 'sells'))}
                 <Text>총 평가액: {totalPrice}</Text>
+                <Text>이름: {portfolio.title}</Text>
                 <Text>최대 보유종목: {portfolio.maxHolds}</Text>
                 <Text>투자선 계산일: {portfolio.covDate}</Text>
                 <Text>보유액 한도: {portfolio.totalCash}</Text>
@@ -217,6 +226,9 @@ export default function TabPortfolioScreen({
             <View style={{flex:0.5}}>
                 {nextHolds.map((item, index)=>renderItemComponent(item, index, 'sells'))}
                 <Text>총 평가액: {nextTotalPrice}</Text>
+                <View style={{flexDirection:'row'}}>
+                    <Text>이름: </Text><TextInput style={styles.TextInput} onChangeText={(text)=>setNextTitle(text)} value={nextTitle}/>
+                </View>
                 <View style={{flexDirection:'row'}}>
                     <Text>최대 보유종목: </Text><TextInput style={styles.TextInput} onChangeText={(text)=>setNextMaxHolds(parseInt(text))} value={nextMaxHolds.toString()}/>
                 </View>
@@ -228,7 +240,8 @@ export default function TabPortfolioScreen({
                 </View>
                 <Button title={'clear'} onPress={()=>setPortfolioFull(defaultPortfolio, false)}/>
                 <Button title={'auto'} onPress={()=>autoTrade()} color={'red'}/>
-                <Button title={'save'} onPress={()=>setPortfolioFull({
+                <Button title={'commit'} onPress={()=>setPortfolioFull({
+                    title: nextTitle,
                     holds: nextHolds,
                     maxHolds: nextMaxHolds,
                     covDate: nextCovDate,
@@ -237,7 +250,16 @@ export default function TabPortfolioScreen({
             </View>
         </View>
         <Separator/>
-        <FrontierSection frontierRef={frontierRef}/>
+        <View style={{flexDirection:'row'}}>
+            <FileManagerSection
+            style={{flexDirection:'column', flex:1}}
+            dir={'portfolio'}
+            data={portfolio}
+            defaultData={defaultPortfolio}
+            setData={(data)=>setPortfolioFull(data, true)}
+            />
+            <FrontierSection frontierRef={frontierRef}/>
+        </View>
       </ScrollView>
     )
   }

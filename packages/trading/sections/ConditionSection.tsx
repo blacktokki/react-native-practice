@@ -54,7 +54,7 @@ export default function ConditionSection(props:{}) {
         multiline
         onChangeText={setConditionFull} 
         value={condition}
-        onContentSizeChange={(e)=>{setSize(e.nativeEvent.contentSize)}}
+        onContentSizeChange={(e)=>{console.log('resizing condition input:', e.nativeEvent.contentSize);setSize(e.nativeEvent.contentSize)}}
      />
      <Button title={'reset'} onPress={()=>{setConditionFull(JSON.stringify(defaultCondition, null, 4))}}/>
      <Button title={'format'} onPress={()=>{setConditionFull(JSON.stringify(JSON.parse(condition), null, 4))}}/>

@@ -20,6 +20,7 @@ init_folder('data').then(()=>{
     init_folder(path.join('data', 'simple'))
     init_folder(path.join('data', 'stock'))
     init_folder(path.join('data', 'backtrade'))
+    init_folder(path.join('data', 'portfolio'))
 })
 
 export function sleep(ms:number){
@@ -128,15 +129,15 @@ export function is_index_stock(codename:string){
     return false
 }
 
-export async function save_backtrade_json(result:any){
-    const _path = path.join('data', 'backtrade')
+export async function save_file_json(dir:string, result:any){
+    const _path = path.join('data', dir)
     if (result.title){
         await save_json(result, path.join(_path, `${result.title}.json`))
     }
 }
 
-export async function load_backtrade_json(filename?:string){
-    const _path = path.join('data', 'backtrade')
+export async function load_file_json(dir:string, filename?:string){
+    const _path = path.join('data', dir)
     if(filename){
         return await load_json(path.join(_path, filename))
     }else{
@@ -144,8 +145,8 @@ export async function load_backtrade_json(filename?:string){
     }
 }
 
-export async function delete_backtrade_json(filename:string){
-    const _path = path.join('data', 'backtrade', filename)
+export async function delete_file_json(dir:string, filename:string){
+    const _path = path.join('data', dir, filename)
     await delete_json(_path)
 }
 

@@ -22,6 +22,21 @@ type Result = {
   candle:Candle<any>,
   rets?:Record<string, number>,
 }
+
+type ResultExtra = {
+  cashRatio:number,
+  earnPow:number,
+  ratio:number,
+  ratioPow:number,
+  earnCount: number
+  sums:[number, number],
+  sumsPow:[number, number],
+  ratios:[number, number],
+  ratiosPow:[number, number],
+  counts:[number, number],
+  domains?:[number, number]
+}
+
 type ResultGroup = {
   buys:(Result & {minCorr:number})[],
   sells:(Result & {minCorr:number})[],
@@ -29,6 +44,7 @@ type ResultGroup = {
   currentStocks?:any,
   cash?:number,
   earn?:number,
+  extra?:ResultExtra
 }
 export type BackTradeRow = [string, ResultGroup]
 export type BackTradeResult = {
@@ -123,8 +139,21 @@ async function backTrade(data_all:CompanyInfoBlock[], setter:(data_all:CompanyIn
     context.sync_lock = 0
     const maxStocks = 4
     const covDate = 252
-    let cash = 1000000
+    const totalCash = 1000000
+    let cash = totalCash
     let earn = 0
+    let extra:ResultExtra = {
+      cashRatio: 0,
+      earnPow: 0,
+      earnCount: 0,
+      ratio: 0,
+      ratioPow: 0,
+      sums:[0, 0],
+      sumsPow: [0, 0],
+      ratios: [0, 0],
+      ratiosPow: [0, 0],
+      counts:[0, 0],
+    }
     let stocks:any = {}
     resultSetter({
       result:Object.entries(preResult.reduce((prev, data)=>{
@@ -135,9 +164,26 @@ async function backTrade(data_all:CompanyInfoBlock[], setter:(data_all:CompanyIn
       }, {} as Record<string, ResultGroup>)).sort((a, b)=>a[0] > b[0]?1:-1).map((result)=>{
         //result[1].stocks = result[1].stocks.sort((a, b)=>a.candle.extra.volume.mas[0].val < b.candle.extra.volume.mas[0].val?1:-1)
         result[1].sells.filter((d)=>stocks[d.stock.full_code]).forEach((d)=>{
-          cash += d.candle.close * stocks[d.stock.full_code][0]
-          result[1].trades.push(`${d.stock.full_code} ${stocks[d.stock.full_code][1].close}(${stocks[d.stock.full_code][1].date}) => ${d.candle.close} ${((d.candle.close / stocks[d.stock.full_code][1].close -1)*100).toFixed(2)}%`)
-          earn += (d.candle.close - stocks[d.stock.full_code][1].close) * stocks[d.stock.full_code][0]
+          const _cash = d.candle.close * stocks[d.stock.full_code][0]
+          const _earn = (d.candle.close - stocks[d.stock.full_code][1].close) * stocks[d.stock.full_code][0]
+          const ratio = ((d.candle.close / stocks[d.stock.full_code][1].close -1)*100)
+          cash += _cash
+          result[1].trades.push(`${d.stock.full_code} ${stocks[d.stock.full_code][1].close}(${stocks[d.stock.full_code][1].date}) => ${d.candle.close} ${ratio.toFixed(2)}%`)
+          earn += _earn
+          extra.cashRatio += _cash / totalCash
+          extra.earnPow += _earn * _earn
+          extra.ratio += ratio
+          extra.ratioPow += ratio * ratio
+          extra.earnCount += 1
+          if(_earn!=0){
+            const earnIdx = _earn>0?1:0
+            extra.sums[earnIdx] += _earn
+            extra.sumsPow[earnIdx] += _earn * _earn
+            extra.ratios[earnIdx] += ratio
+            extra.ratiosPow[earnIdx] += ratio * ratio
+            extra.counts[earnIdx] += 1            
+          }
+          extra.domains = extra.domains?[Math.min(extra.domains[0], _earn), Math.max(extra.domains[1], _earn)]:[_earn, _earn]
           delete stocks[d.stock.full_code]
         })
         result[1].buys =  result[1].buys.sort((a, b)=>a.candle.extra.volume.mas[0].val < b.candle.extra.volume.mas[0].val?1:-1)
@@ -161,6 +207,7 @@ async function backTrade(data_all:CompanyInfoBlock[], setter:(data_all:CompanyIn
         result[1].earn = earn
         result[1].currentStocks = {...stocks}
         result[1].buys.forEach((v)=>{v.rets=undefined})
+        result[1].extra = JSON.parse(JSON.stringify(extra))
         return result
       }).reverse(),
       condition:condition,
