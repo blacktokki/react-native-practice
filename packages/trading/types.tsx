@@ -46,4 +46,6 @@ export type CompanyInfoBlock = {
 export type CompanyInfoHold = CompanyInfoBlock & {
     count:number
     price:number
+    lowRatio:number
+    highRatio:number
 }

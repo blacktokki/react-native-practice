@@ -65,6 +65,7 @@ export default function TabPortfolioScreen({
     const [companyPrice, setCompanyPrice] = React.useState<number>(0)
     const [companyCount, setCompanyCount] = React.useState<number>(0)
     const [companyMode, setCompanyMode] = React.useState<'buys'|'sells'>('buys')
+    const [companyRatio, setCompanyRatio] = React.useState(0)
     const [priceRecord, setPriceRecord] = React.useState<Record<string, FronTierPrice>>({})
     const [portfolio, setPortfolio] = React.useState<Portfolio>(defaultPortfolio)
     const [nextTitle, setNextTitle] = React.useState(defaultPortfolio.title)
@@ -112,6 +113,8 @@ export default function TabPortfolioScreen({
                     ...d,
                     price: priceRecord[d.full_code].price,
                     count:Math.floor(nextTotalCash * result.stocks[d.full_code] /priceRecord[d.full_code].price),
+                    lowRatio:0,
+                    highRatio:0
                 })
             })
             setNextHolds(holds)
@@ -161,7 +164,13 @@ export default function TabPortfolioScreen({
                     newNextHolds[nextHoldsIndex].price = (beforePrice + companyCount * companyPrice) / newNextHolds[nextHoldsIndex].count
             }
             else if(company){
-                newNextHolds.push({...company, count:companyCount, price: companyPrice})
+                newNextHolds.push({
+                    ...company, 
+                    count:companyCount, 
+                    price: companyPrice,
+                    lowRatio: 0, 
+                    highRatio: 0,
+                })
             }
         }
         if (companyMode == 'sells' && nextHoldsIndex>=0){
@@ -171,7 +180,21 @@ export default function TabPortfolioScreen({
         }
         setNextHolds(newNextHolds)
     }, [nextHolds, companyCode, companyMode, companyCount, signal, companyPrice])
-    const portpolioListProps = React.useMemo(()=>({setCompanyMode, setCompanyCode, setCompanyPrice, priceRecord}), [priceRecord])
+    const onPressLowPrice = React.useCallback(()=>{
+        const newNextHolds = nextHolds.slice(0)
+        const nextHoldsIndex = newNextHolds.findIndex((v)=>v.full_code == companyCode)
+        if(nextHoldsIndex >=0)
+            newNextHolds[nextHoldsIndex].lowRatio = companyRatio
+        setNextHolds(newNextHolds)
+    },[nextHolds, companyCode, companyRatio])
+    const onPressHighPrice = React.useCallback(()=>{
+        const newNextHolds = nextHolds.slice(0)
+        const nextHoldsIndex = newNextHolds.findIndex((v)=>v.full_code == companyCode)
+        if(nextHoldsIndex >=0)
+            newNextHolds[nextHoldsIndex].highRatio = companyRatio
+        setNextHolds(newNextHolds)
+    },[nextHolds, companyCode, companyRatio])
+    const portpolioListProps = React.useMemo(()=>({setCompanyMode, setCompanyCode, setCompanyPrice, setCompanyRatio, priceRecord}), [priceRecord])
     React.useEffect(()=>{
         paramsToFrontier(route.params?.buys).then(setBuySignal)
         paramsToFrontier(route.params?.sells).then(setSellSignal)
@@ -201,6 +224,11 @@ export default function TabPortfolioScreen({
         <View style={{flexDirection:'row'}}>
             <TextInput style={styles.TextInput} onChangeText={(text)=>setCompanyCount(parseInt(text))} value={companyCount.toString()}/>
             <Button title={companyMode=='buys'?'매수':'매도'} onPress={onPressTrade}/>
+        </View>
+        <View style={{flexDirection:'row'}}>
+            <TextInput style={styles.TextInput} onChangeText={(text)=>setCompanyRatio(parseFloat(text))} value={companyRatio.toString()}/>
+            <Button title={'익절률 수정'} onPress={onPressHighPrice}/>
+            <Button title={'손절률 수정'} onPress={onPressLowPrice}/>
         </View>
         <Separator/>
         <View style={{flexDirection:'row'}}>

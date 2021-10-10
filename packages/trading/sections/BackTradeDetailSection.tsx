@@ -57,6 +57,7 @@ export default function BackTradeDetailSection({resultRow, popup, navigation, se
         <Text>거래 횟수: {count}  [{extra?.counts[0]}, {extra?.counts[1]}]</Text>
         <Text>누적 회전율: {(extra?extra.cashRatio*100:0).toFixed(2)}%</Text>
         {extra?.domains?<Text>최대 수익/손실액: [{extra?.domains[0]}원, {extra?.domains[1]}원]</Text>:undefined}
+        {extra?.ratioDomains?<Text>최대 수익/손실률: [{extra?.ratioDomains[0]}원, {extra?.ratioDomains[1]}원]</Text>:undefined}
         <Separator/>
         <Text>매도</Text>
         {resultRow[1].sells.map((v, k)=>(<TouchableOpacity key={k} onPress={()=>{navigateDetail( v.stock['full_code'])}}>

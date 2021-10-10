@@ -34,7 +34,8 @@ type ResultExtra = {
   ratios:[number, number],
   ratiosPow:[number, number],
   counts:[number, number],
-  domains?:[number, number]
+  domains?:[number, number],
+  ratioDomains?:[number, number]
 }
 
 type ResultGroup = {
@@ -185,6 +186,7 @@ async function backTrade(data_all:CompanyInfoBlock[], setter:(data_all:CompanyIn
             extra.counts[earnIdx] += 1            
           }
           extra.domains = extra.domains?[Math.min(extra.domains[0], _earn), Math.max(extra.domains[1], _earn)]:[_earn, _earn]
+          extra.ratioDomains = extra.ratioDomains?[Math.min(extra.ratioDomains[0], ratio), Math.max(extra.ratioDomains[1], ratio)]:[ratio, ratio]
           delete stocks[d.stock.full_code]
         })
         result[1].buys =  result[1].buys.sort((a, b)=>a.candle.extra.volume.mas[0].val < b.candle.extra.volume.mas[0].val?1:-1)
