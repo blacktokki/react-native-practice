@@ -26,6 +26,7 @@ export default function TabSearchScreen({
       <Text style={{color: item.checked !== undefined?(item.checked?'green':'orange'): 'red'}}>◉</Text>
     </View>
   )},[])
+  const keyExtractor = React.useCallback((item:CompanyInfoBlock) => item.full_code, [])
   const onChangeText = React.useCallback((value)=>{
     setKeyword(value)
     if (searchRef.current)
@@ -58,7 +59,7 @@ export default function TabSearchScreen({
         data={dataSearch}
         scrollEnabled={false}
         renderItem={renderItem}
-        keyExtractor={item => (item as any).full_code}
+        keyExtractor={keyExtractor}
         maxToRenderPerBatch={syncContext.sync_lock!=1?200:10}
       />
     </ScrollView>

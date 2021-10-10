@@ -1,7 +1,5 @@
 import * as React from 'react';
-import { View, ViewStyle, Text } from 'react-native';
-import { FlatList, TouchableOpacity } from 'react-native-gesture-handler';
-import { Button } from 'react-native';
+import { View, ViewStyle, Text, FlatList, TouchableOpacity, Button } from 'react-native';
 import { delete_file_json, load_file_json, save_file_json } from '../utils';
 type SectionParamList = {
     style:ViewStyle,

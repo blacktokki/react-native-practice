@@ -63,6 +63,21 @@ async function backTrade(data_all:CompanyInfoBlock[], setter:(data_all:CompanyIn
   }
   console.log(condition)
   if (condition && context.sync_lock == 0){
+    const writeBackTradeCandle = (candle:Candle<any>, index:number, array:Candle<any>[])=>{
+      if (index > 0)
+        candle.prev = array[index - 1]
+      if (index < array.length-1){
+        const change = array[index +1].open/candle.close
+        if (Math.abs(1- change)>0.3)
+          candle.willChange = change 
+      }
+      candle.extra = {}
+      if (condition.config?.hloc)hloc.setData(candle, condition.config.hloc)
+      if (condition.config?.volume)volume.setData(candle, condition.config.volume)
+      if (condition.config?.mfi)mfi.setData(candle, condition.config.mfi)
+      if (condition.config?.ii)ii.setData(candle, condition.config.ii)
+      if (condition.config?.bolmfiii)bolmfiii.setData(candle, condition.config.bolmfiii)
+    }
     context.sync_lock = 1
     context.reload_stock = 0
     let current_load_stock = 0
@@ -100,21 +115,7 @@ async function backTrade(data_all:CompanyInfoBlock[], setter:(data_all:CompanyIn
           //trade start
           const candles:Candle<any>[] = j2.output.map(ModelToCandle).reverse()
           j2.output.splice(0, j2.output.length)
-          candles.forEach((candle, index, array)=>{
-            if (index > 0)
-              candle.prev = array[index - 1]
-            if (index < array.length-1){
-              const change = array[index +1].open/candle.close
-              if (Math.abs(1- change)>0.3)
-                candle.willChange = change 
-            }
-            candle.extra = {}
-            if (condition.config?.hloc)hloc.setData(candle, condition.config.hloc)
-            if (condition.config?.volume)volume.setData(candle, condition.config.volume)
-            if (condition.config?.mfi)mfi.setData(candle, condition.config.mfi)
-            if (condition.config?.ii)ii.setData(candle, condition.config.ii)
-            if (condition.config?.bolmfiii)bolmfiii.setData(candle, condition.config.bolmfiii)
-          })
+          candles.forEach(writeBackTradeCandle)
           data_all[i].traded = true
           if(show_log)
             console.log(i, d.codeName)

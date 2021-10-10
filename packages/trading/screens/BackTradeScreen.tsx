@@ -18,8 +18,8 @@ export default function TabBackTradeScreen({
   const [result, setResult] = React.useState< BackTradeResult>({})
   const [year, setYear] = React.useState(new Date().getFullYear())
   const [popup, setPopup] = React.useState<Popup>({})
-  const scrollOffsetRef = React.useRef(0)
   const screenHeight = useHeaderHeight()
+  const scrollOffsetRef = React.useRef(0)
   const resultYear = React.useMemo(()=>{
     return result.result?.filter((value)=>{return value[0].startsWith(year.toString())})
   }, [result, year])
@@ -32,7 +32,8 @@ export default function TabBackTradeScreen({
     })}}>
       <Text>{item[0]} cash:{item[1].cash} earn:{item[1].earn}</Text>
     </TouchableOpacity>)
-  }, [screenHeight])
+  }, [screenHeight, scrollOffsetRef.current])
+  const onScroll = React.useCallback((e)=>{scrollOffsetRef.current = e.nativeEvent.contentOffset.y}, [])
   React.useEffect(()=>{
     console.log('reload finished')
     backTradeContext.reload_stock = 0
@@ -41,7 +42,7 @@ export default function TabBackTradeScreen({
     }
   },[data])
   return (
-    <ScrollView onScroll={(e)=>{scrollOffsetRef.current = e.nativeEvent.contentOffset.y}}>
+    <ScrollView onScroll={onScroll}>
       <View style={{flexDirection:'row'}}>
         <FileManagerSection
           style={{flexDirection:'column', flex:0.5}}
