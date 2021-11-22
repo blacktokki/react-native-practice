@@ -2,11 +2,11 @@ import * as React from 'react';
 import { Text, View, Button } from 'react-native';
 import moment from 'moment'
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { load_stock_json, save_last_date, sleep, ddFormat, STORAGE_KEY } from '../utils';
+import { load_stock_json, save_last_date, sleep, ddFormat, STORAGE_KEY, load_stock_json_bulk } from '../utils';
 import { CompanyInfoBlock, CompanyResponse } from '../types';
 
-const MAX_LOAD_STOCK = 200
-const MAX_RELOAD_STOCK = 200
+const MAX_LOAD_STOCK = 300
+const MAX_RELOAD_STOCK = 300
 export const syncContext = {
     reload_stock:0,
     sync_lock:0,
@@ -20,13 +20,23 @@ async function load_stock(data_all:CompanyInfoBlock[], endDate:Date, setter:(dat
     data_all.forEach((item)=>{item.checked = false})
     let new_data_all: CompanyInfoBlock[] = data_all.map((item)=>item)
     setter(new_data_all)
+    let _date = moment(endDate).add(-7, 'day').toDate()
+    while(_date.valueOf()<= endDate.valueOf()){
+      current_load_stock += 1
+      load_stock_json_bulk(_date).then((data)=>{
+        current_load_stock -= 1
+      })
+      _date = moment(_date).add(1, 'day').toDate()
+    }
+    while (current_load_stock > 0)
+      await sleep(50)
     for (const [i, d] of data_all.entries()){
       let full_code = d.full_code
       context.reload_stock += 1
       while (context.sync_lock==2)
-        await sleep(1000)
+        await sleep(50)
       while (current_load_stock >= MAX_LOAD_STOCK || context.reload_stock>=MAX_RELOAD_STOCK){
-          await sleep(100)
+          await sleep(50)
           if (context.reload_stock == MAX_RELOAD_STOCK){
               console.log('reload!!!!')
               new_data_all = data_all.map((item)=>item)  // array.slice(0)

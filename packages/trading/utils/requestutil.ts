@@ -76,6 +76,23 @@ export async function request_company(full_code:string, options:{start_date:Date
     return _data
 }
 
+export async function request_company_all(date:Date){
+  const params = new URLSearchParams();
+    let data = {
+        'bld': 'dbms/MDC/STAT/standard/MDCSTAT01501',
+        'mktId': 'ALL',
+        'trdDd': dd_format(date),
+        'share': '1',
+        'money': '1',
+        'csvxls_isNo': 'false',
+    }
+    Object.keys(data).map(key=>params.append(key, (data as any)[key]))
+    const _data = (await companyApi.post('http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd', params)).data
+    return _data
+}
+
+// request_company_all(new Date).then((v)=>{console.log(v)})
+
 async function request_index(code:string, options:{start_date:Date, end_date:Date}={start_date:new Date(1990,1,1), end_date:new Date(2100,1,1)}){
   const params = new URLSearchParams();
   let data = {

@@ -33,6 +33,11 @@ export type CompanyResponse = {
     'CURRENT_DATETIME':string
 }
 
+export type CompanyResponseAll = {
+    'OutBlock_1': (DailySimpleModel & {'ISU_SRT_CD': string})[],
+    'CURRENT_DATETIME':string
+}
+
 export type CompanyInfoBlock = {
     marketCode:string
     full_code:string

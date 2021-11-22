@@ -1,8 +1,8 @@
 import path from 'path'
 import moment from 'moment'
 import {load_json, save_json, exists_file, init_folder, file_list, delete_json} from './jsonio'
-import {request_company, request_company_list, INDEX_INFO } from './requestutil'
-import { CompanyInfoBlock, CompanyResponse, DailyFullModel, DailySimpleModel } from '../types'
+import {request_company, request_company_list, INDEX_INFO, request_company_all } from './requestutil'
+import { CompanyInfoBlock, CompanyResponse, DailyFullModel, DailySimpleModel, CompanyResponseAll } from '../types'
 import { saveCompress, loadCompress } from './compress'
 
 export const INDEX_STOCK = ['ARIRANG', 'HANARO', 'KBSTAR', 'KINDEX', 'KODEX', 'TIGER', 'KOSEF', 'SMART', 'TREX']
@@ -63,6 +63,38 @@ async function _save_stock(j2:CompanyResponse, _path:string, isSimple:number){
         await saveCompress(j2, _path, isSimple==2)
 }
 
+const bulk_cache:Record<string, Record<string, DailySimpleModel> | null> = {}
+export async function load_stock_json_bulk(date:Date){
+    const dateStr = ddFormat(date)
+    if (!bulk_cache[dateStr]){
+            if(bulk_cache === null){
+                while(bulk_cache === null)
+                    await sleep(200)
+            }
+            else{
+                bulk_cache[dateStr] = null
+                const res:CompanyResponseAll = await request_company_all(date)
+                const result:Record<string, DailySimpleModel> = {}
+                res.OutBlock_1.forEach(value=>{
+                    value.TRD_DD = dateStr
+                    /*
+                    delete (value).CMPPREVDD_PRC
+                    delete (value).FLUC_TP_CD
+                    delete (value).ISU_ABBRV
+                    delete (value).LIST_SHRS
+                    delete (value).MKTCAP 
+                    delete (value).MKT_ID
+                    delete (value).MKT_NM
+                    delete (value).SECT_TP_NM
+                    */
+                    result[value.ISU_SRT_CD] = value
+                })
+                bulk_cache[dateStr] = result
+            }
+        }
+    return bulk_cache[dateStr]
+}
+
 export async function load_stock_json(full_code:string, options?:{start_date:Date, end_date:Date, log_datetime:number, isSimple:number}){
     options = Object.assign({start_date:default_date.start_date, end_date:default_date.end_date, log_datetime:0}, options)
     let _path;
@@ -99,12 +131,40 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
             await sleep(200)
         }
         else if (options.start_date < last_date && last_date < options.end_date){
-            let j3:CompanyResponse = await request_company(full_code, {start_date:last_date, end_date:options.end_date})
+            let j3:CompanyResponse
+            if (options.isSimple){
+                let _date = moment(last_date).add(-1, 'second').toDate()
+                const output:DailySimpleModel[] = []
+                const shortCode = full_code.slice(3, 9)
+                while(_date.valueOf() <= options.end_date.valueOf()){
+                    const cache = bulk_cache[ddFormat(_date)]
+                    // console.log('@@', shortCode, cache?1:0, (cache || {})[shortCode])
+                    if (!(cache && cache[shortCode]))
+                        break
+                    if (cache[shortCode].TDD_CLSPRC != '-')
+                        output.push(cache[shortCode])
+                    _date = moment(_date).add(1, 'day').toDate()
+                }
+                if (_date.valueOf() <= options.end_date.valueOf())
+                    j3 = await request_company(full_code, {start_date:last_date, end_date:options.end_date})
+                else{
+                    // console.log('use bulk: ', full_code)
+                    j3 = {
+                        _status: 4,
+                        output: output.reverse(),
+                        CURRENT_DATETIME: j2['CURRENT_DATETIME']
+                    }
+                }
+            }
+            else
+                j3 = await request_company(full_code, {start_date:last_date, end_date:options.end_date})
             j2['output'] = j3['output'].concat(j2['output'].slice(1))
             j2['CURRENT_DATETIME'] = j3['CURRENT_DATETIME']
             _save_stock(j2, _path, options.isSimple)
-            j2['_status'] = 3
-            await sleep(200)
+            if (j2['_status'] != 4){
+                j2['_status'] = 3
+                await sleep(200)
+            }
         }
         else
             j2['_status'] = 1
