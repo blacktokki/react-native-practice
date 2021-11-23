@@ -1,30 +1,34 @@
 import * as React from 'react';
-import { Text, View, Button } from 'react-native';
+import { Text, View, Button, Platform } from 'react-native';
 import moment from 'moment'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { load_stock_json, save_last_date, sleep, ddFormat, STORAGE_KEY, load_stock_json_bulk } from '../utils';
 import { CompanyInfoBlock, CompanyResponse } from '../types';
 
-const MAX_LOAD_STOCK = 300
-const MAX_RELOAD_STOCK = 300
+const MAX_LOAD_STOCK = Platform.OS === 'web'?300:450
+const MAX_RELOAD_STOCK = Platform.OS === 'web'?300:450
+export const LOAD_BULK_COUNT = 7
 export const syncContext = {
     reload_stock:0,
     sync_lock:0,
+    bulk_count:0,
 }
 
-async function load_stock(data_all:CompanyInfoBlock[], endDate:Date, setter:(data_all:CompanyInfoBlock[])=>void, show_log:number, context:typeof syncContext){
+export async function load_stock(data_all:CompanyInfoBlock[], endDate:Date, setter:(data_all:CompanyInfoBlock[])=>void, show_log:number, context:typeof syncContext){
   if (context.sync_lock == 0){
     let current_load_stock = 0
     context.sync_lock = 1
     context.reload_stock = 0
+    context.bulk_count = 0
     data_all.forEach((item)=>{item.checked = false})
     let new_data_all: CompanyInfoBlock[] = data_all.map((item)=>item)
     setter(new_data_all)
-    let _date = moment(endDate).add(-7, 'day').toDate()
+    let _date = moment(endDate).add(1 - LOAD_BULK_COUNT, 'day').toDate()
     while(_date.valueOf()<= endDate.valueOf()){
       current_load_stock += 1
       load_stock_json_bulk(_date).then((data)=>{
         current_load_stock -= 1
+        context.bulk_count += 1
       })
       _date = moment(_date).add(1, 'day').toDate()
     }
@@ -58,7 +62,7 @@ async function load_stock(data_all:CompanyInfoBlock[], endDate:Date, setter:(dat
               console.log(j2.output.length?j2.output[0] : null)
             }
             else{
-              console.log(i, d.codeName)
+              console.log(i, d.codeName, j2._status)
             }
           }
           data_all[i].checked = true
@@ -107,7 +111,7 @@ export default (props:{data:CompanyInfoBlock[], setData:(data_all:CompanyInfoBlo
               props.context.sync_lock==0?
               ()=>{load_stock(props.data, lastDate, props.setData, 1, props.context)}:
               ()=>{}}/>
-          <Text>({syncLength[0]}/{syncLength[2]})({syncLength[1]}/{syncLength[2]})</Text>
+          <Text>({syncLength[0]}/{syncLength[2]})({props.context.bulk_count == LOAD_BULK_COUNT?syncLength[1]:'-'}/{syncLength[2]})</Text>
         </View>
     )
 }

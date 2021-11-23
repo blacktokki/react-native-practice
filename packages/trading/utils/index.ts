@@ -53,7 +53,7 @@ export async function load_stocklist_json(){
 
 const default_date = {
     start_date:new Date(2016, 0, 1), 
-    end_date:moment(new Date()).set({h: 0, m: 0, s:0}).toDate()
+    end_date:new Date()
 }
 
 async function _save_stock(j2:CompanyResponse, _path:string, isSimple:number){
@@ -94,9 +94,11 @@ export async function load_stock_json_bulk(date:Date){
         }
     return bulk_cache[dateStr]
 }
+const BASE_HOURS = 18
 
 export async function load_stock_json(full_code:string, options?:{start_date:Date, end_date:Date, log_datetime:number, isSimple:number}){
     options = Object.assign({start_date:default_date.start_date, end_date:default_date.end_date, log_datetime:0}, options)
+    const end_date_limit = moment(options.end_date).set({h: BASE_HOURS, m: 0, s:0, ms:0}).toDate()
     let _path;
     if (options.isSimple==2)
         _path = full_code
@@ -119,24 +121,25 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
         await sleep(200)
     }
     if (success){
-        let output_len = j2['output'].length
-        let date = moment(new Date(j2['output'][0]['TRD_DD'])).add(1, 'second').toDate()
-        let last_date = output_len ? date : moment(options.start_date).add(1, 'day').toDate()
+        const output_len = j2['output'].length
+        let last_date = output_len ? new Date(j2['output'][0]['TRD_DD']) : moment(options.start_date).add(1, 'day').toDate()
+        if (ddFormat(last_date) == ddFormat(options.end_date))
+            last_date = options.end_date
         if (options.log_datetime)
-            console.log(options.start_date, last_date, options.end_date)
+            console.log(options.start_date, last_date, end_date_limit)
         if  (output_len == 0){
             j2 = await request_company(full_code, default_date) as any
             _save_stock(j2, _path, options.isSimple)
             j2['_status'] = 2
             await sleep(200)
         }
-        else if (options.start_date < last_date && last_date < options.end_date){
+        else if (options.start_date.valueOf() < last_date.valueOf() && last_date.valueOf() < end_date_limit.valueOf()){
             let j3:CompanyResponse
             if (options.isSimple){
-                let _date = moment(last_date).add(-1, 'second').toDate()
+                let _date = last_date
                 const output:DailySimpleModel[] = []
                 const shortCode = full_code.slice(3, 9)
-                while(_date.valueOf() <= options.end_date.valueOf()){
+                while(_date.valueOf() <= end_date_limit.valueOf()){
                     const cache = bulk_cache[ddFormat(_date)]
                     // console.log('@@', shortCode, cache?1:0, (cache || {})[shortCode])
                     if (!(cache && cache[shortCode]))
@@ -145,8 +148,8 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
                         output.push(cache[shortCode])
                     _date = moment(_date).add(1, 'day').toDate()
                 }
-                if (_date.valueOf() <= options.end_date.valueOf())
-                    j3 = await request_company(full_code, {start_date:last_date, end_date:options.end_date})
+                if (_date.valueOf() <= end_date_limit.valueOf())
+                    j3 = await request_company(full_code, {start_date:last_date, end_date:end_date_limit})
                 else{
                     // console.log('use bulk: ', full_code)
                     j3 = {
@@ -157,11 +160,13 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
                 }
             }
             else
-                j3 = await request_company(full_code, {start_date:last_date, end_date:options.end_date})
+                j3 = await request_company(full_code, {start_date:last_date, end_date:end_date_limit})
             j2['output'] = j3['output'].concat(j2['output'].slice(1))
             j2['CURRENT_DATETIME'] = j3['CURRENT_DATETIME']
             _save_stock(j2, _path, options.isSimple)
-            if (j2['_status'] != 4){
+            if (j3['_status'] == 4)
+                j2['_status'] = 4
+            else{
                 j2['_status'] = 3
                 await sleep(200)
             }
