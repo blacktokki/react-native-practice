@@ -15,6 +15,7 @@ const MAX_RELOAD_STOCK = 250
 export const backTradeContext = {
     reload_stock:0,
     sync_lock:0,
+    current_date:''
 }
 
 type Result = {
@@ -139,6 +140,8 @@ async function backTrade(data_all:CompanyInfoBlock[], setter:(data_all:CompanyIn
     //////
     new_data_all = data_all.map((item)=>item)
     context.sync_lock = 0
+    context.reload_stock = 0
+    context.current_date = ''
     const maxStocks = 4
     const covDate = 252
     const totalCash = 1000000
@@ -157,13 +160,24 @@ async function backTrade(data_all:CompanyInfoBlock[], setter:(data_all:CompanyIn
       counts:[0, 0],
     }
     let stocks:any = {}
-    resultSetter({
-      result:Object.entries(preResult.reduce((prev, data)=>{
-        if (prev[data.dateStr] == undefined)
-          prev[data.dateStr] = {buys:[], sells:[], trades:[]}
-        prev[data.dateStr][data.signal].push({stock:data.stock, candle:data.candle, rets:data.rets, minCorr:1})
-        return prev
-      }, {} as Record<string, ResultGroup>)).sort((a, b)=>a[0] > b[0]?1:-1).map((result)=>{
+    const results:[string, ResultGroup][] = []
+    for(const result of Object.entries(preResult.reduce((prev, data)=>{
+      if (prev[data.dateStr] == undefined)
+        prev[data.dateStr] = {buys:[], sells:[], trades:[]}
+      prev[data.dateStr][data.signal].push({stock:data.stock, candle:data.candle, rets:data.rets, minCorr:1})
+      return prev
+    }, {} as Record<string, ResultGroup>)).sort((a, b)=>a[0] > b[0]?1:-1)){
+        while (context.reload_stock>=MAX_RELOAD_STOCK){
+          await sleep(100)
+          if (context.reload_stock == MAX_RELOAD_STOCK){
+            console.log('reload!!!!')
+            new_data_all = data_all.slice(0)
+            setter(new_data_all)
+          }
+          else
+            context.reload_stock += 1
+        }
+        context.reload_stock += 1
         //result[1].stocks = result[1].stocks.sort((a, b)=>a.candle.extra.volume.mas[0].val < b.candle.extra.volume.mas[0].val?1:-1)
         result[1].sells.filter((d)=>stocks[d.stock.full_code]).forEach((d)=>{
           const _cash = d.candle.close * stocks[d.stock.full_code][0]
@@ -211,8 +225,11 @@ async function backTrade(data_all:CompanyInfoBlock[], setter:(data_all:CompanyIn
         result[1].currentStocks = {...stocks}
         result[1].buys.forEach((v)=>{v.rets=undefined})
         result[1].extra = JSON.parse(JSON.stringify(extra))
-        return result
-      }).reverse(),
+        context.current_date = result[0]
+        results.push(result)
+    }
+    resultSetter({
+      result:results.reverse(),
       condition:condition,
       title: ddFormat(new Date()).replace(/\//g, '') + '_' + new Date().valueOf()
     })
@@ -233,7 +250,7 @@ export default function BackTradeSyncSection(props:{data:CompanyInfoBlock[], set
               props.context.sync_lock==0?
               ()=>{backTrade(props.data, props.setData, props.setResult, 1, props.context)}:
               ()=>{}}/>
-      <Text>({syncLength[0]}/{syncLength[1]})</Text>
+      <Text>({syncLength[0]}/{syncLength[1]})({props.context.current_date})</Text>
     </View>
   )
 }

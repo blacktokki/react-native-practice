@@ -3,7 +3,7 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { DrawerParamList } from '@react-native-practice/core/types';
 import { TouchableOpacity ,Text, View, FlatList, TextInput, ScrollView } from 'react-native';
 import {load_stocklist_json} from '../utils';
-import SyncSection, { syncContext } from '../sections/SyncSection';
+import /*SyncSection,*/ { syncContext } from '../sections/SyncSection';
 import Separator from '../components/Separator';
 import { CompanyInfoBlock } from '../types';
 
@@ -53,7 +53,7 @@ export default function TabSearchScreen({
   return (
     <ScrollView>
       <TextInput style={{borderColor:'#000', borderWidth: 1, marginVertical: 30}} onChangeText={onChangeText} value={keyword}></TextInput>
-      <SyncSection data={data} setData={setData} context={syncContext}/>
+      {/*<SyncSection data={data} setData={setData} context={syncContext}/>*/}
       <Separator/>
       <FlatList
         data={dataSearch}

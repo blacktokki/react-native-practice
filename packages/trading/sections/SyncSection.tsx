@@ -2,12 +2,11 @@ import * as React from 'react';
 import { Text, View, Button, Platform } from 'react-native';
 import moment from 'moment'
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { load_stock_json, save_last_date, sleep, ddFormat, STORAGE_KEY, load_stock_json_bulk } from '../utils';
+import { load_stock_json, save_last_date, sleep, ddFormat, STORAGE_KEY, load_stock_json_bulk, LOAD_BULK_COUNT } from '../utils';
 import { CompanyInfoBlock, CompanyResponse } from '../types';
 
-const MAX_LOAD_STOCK = Platform.OS === 'web'?300:450
-const MAX_RELOAD_STOCK = Platform.OS === 'web'?300:450
-export const LOAD_BULK_COUNT = 7
+const MAX_LOAD_STOCK = Platform.OS === 'web'?400:450
+const MAX_RELOAD_STOCK = Platform.OS === 'web'?400:450
 export const syncContext = {
     reload_stock:0,
     sync_lock:0,
@@ -29,7 +28,7 @@ export async function load_stock(data_all:CompanyInfoBlock[], endDate:Date, sett
       load_stock_json_bulk(_date).then((data)=>{
         current_load_stock -= 1
         context.bulk_count += 1
-      })
+      }).catch((e)=>{console.log('error: ', e)})
       _date = moment(_date).add(1, 'day').toDate()
     }
     while (current_load_stock > 0)

@@ -2,10 +2,10 @@ import path from 'path'
 import moment from 'moment'
 import {load_json, save_json, exists_file, init_folder, file_list, delete_json} from './jsonio'
 import {request_company, request_company_list, INDEX_INFO, request_company_all } from './requestutil'
-import { CompanyInfoBlock, CompanyResponse, DailyFullModel, DailySimpleModel, CompanyResponseAll } from '../types'
+import { CompanyInfoBlock, CompanyResponse, DailyFullModel, DailySimpleModel, CompanyResponseAll, CompanyBulk } from '../types'
 import { saveCompress, loadCompress } from './compress'
 
-export const INDEX_STOCK = ['ARIRANG', 'HANARO', 'KBSTAR', 'KINDEX', 'KODEX', 'TIGER', 'KOSEF', 'SMART', 'TREX']
+export const INDEX_STOCK = ['ARIRANG', 'HANARO', 'KBSTAR', 'KINDEX', 'KODEX', 'TIGER', 'KOSEF', 'SMART', 'TREX', 'SOL', 'TIMEFOLIO']
 export const FILE_SPLIT = 10
 export const TRDVAL_DAYS = 20
 export const MIN_TRDVAL = 2000000000
@@ -13,14 +13,27 @@ export const REPORT_OFFSET2 = 0.5
 export const STORAGE_KEY = {
     'last_date': 'RNP_LAST_DATE',
     'condition': 'RNP_CONDITION',
-    'portfolio': 'RNP_PORTFOLIO'
+    'portfolio': 'RNP_PORTFOLIO',
+    'last_sync': 'RNP_LAST_SYNC'
 }
+export const LOAD_BULK_COUNT = 7
 
 init_folder('data').then(()=>{
     init_folder(path.join('data', 'simple'))
     init_folder(path.join('data', 'stock'))
     init_folder(path.join('data', 'backtrade'))
     init_folder(path.join('data', 'portfolio'))
+    init_folder(path.join('data', 'bulk')).then(()=>{
+        file_list(path.join('data', 'bulk')).then((files)=>{
+            const baseDate = moment(new Date()).add(-LOAD_BULK_COUNT, 'day').toDate()
+            files.forEach((f)=>{
+                if(baseDate.valueOf()> new Date(f.replace('.json', '')).valueOf()){
+                    console.log('delete file ', f)
+                    delete_file_json('bulk', f)
+                }
+            })
+        })
+    })
 })
 
 export function sleep(ms:number){
@@ -53,7 +66,7 @@ export async function load_stocklist_json(){
 
 const default_date = {
     start_date:new Date(2016, 0, 1), 
-    end_date:new Date()
+    end_date:moment(new Date()).set({h: 0, m: 0, s:0, ms:0}).toDate()
 }
 
 async function _save_stock(j2:CompanyResponse, _path:string, isSimple:number){
@@ -63,42 +76,56 @@ async function _save_stock(j2:CompanyResponse, _path:string, isSimple:number){
         await saveCompress(j2, _path, isSimple==2)
 }
 
-const bulk_cache:Record<string, Record<string, DailySimpleModel> | null> = {}
+const bulk_cache:Record<string, CompanyBulk> = {}
+
 export async function load_stock_json_bulk(date:Date){
     const dateStr = ddFormat(date)
-    if (!bulk_cache[dateStr]){
-            if(bulk_cache === null){
-                while(bulk_cache === null)
-                    await sleep(200)
-            }
-            else{
-                bulk_cache[dateStr] = null
-                const res:CompanyResponseAll = await request_company_all(date)
-                const result:Record<string, DailySimpleModel> = {}
-                res.OutBlock_1.forEach(value=>{
-                    value.TRD_DD = dateStr
-                    /*
-                    delete (value).CMPPREVDD_PRC
-                    delete (value).FLUC_TP_CD
-                    delete (value).ISU_ABBRV
-                    delete (value).LIST_SHRS
-                    delete (value).MKTCAP 
-                    delete (value).MKT_ID
-                    delete (value).MKT_NM
-                    delete (value).SECT_TP_NM
-                    */
-                    result[value.ISU_SRT_CD] = value
-                })
-                bulk_cache[dateStr] = result
-            }
+    const now = new Date()
+    let correctHours;
+    if (dateStr == ddFormat(now) && now.getHours()<18){
+        correctHours = now.getHours()
+    }else if (date.valueOf()> now.valueOf()){
+        correctHours = -1
+    }
+    console.log(date, correctHours)
+    const _path = path.join('data', 'bulk', `${dateStr.replace(/\//gi,"-")}.json`)
+    if (!bulk_cache[dateStr] || bulk_cache[dateStr].hours !== correctHours){
+        let j:CompanyBulk|null=null;
+        try{
+            j = await load_json(_path) as CompanyBulk
+            if(j?.hours !== correctHours)
+                throw undefined
         }
+        catch(e){
+            const res:CompanyResponseAll = await request_company_all(date)
+            const result:Record<string, DailySimpleModel> = {}
+            res.OutBlock_1.forEach(value=>{
+                value.TRD_DD = dateStr
+                /*
+                delete (value).CMPPREVDD_PRC
+                delete (value).FLUC_TP_CD
+                delete (value).ISU_ABBRV
+                delete (value).LIST_SHRS
+                delete (value).MKTCAP 
+                delete (value).MKT_ID
+                delete (value).MKT_NM
+                delete (value).SECT_TP_NM
+                */
+                result[value.ISU_SRT_CD] = value
+            })
+            j = {
+                output: result,
+                hours: correctHours
+            }
+            save_json(j, _path)
+        }
+        bulk_cache[dateStr] = j
+    }
     return bulk_cache[dateStr]
 }
-const BASE_HOURS = 18
 
 export async function load_stock_json(full_code:string, options?:{start_date:Date, end_date:Date, log_datetime:number, isSimple:number}){
     options = Object.assign({start_date:default_date.start_date, end_date:default_date.end_date, log_datetime:0}, options)
-    const end_date_limit = moment(options.end_date).set({h: BASE_HOURS, m: 0, s:0, ms:0}).toDate()
     let _path;
     if (options.isSimple==2)
         _path = full_code
@@ -123,33 +150,36 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
     if (success){
         const output_len = j2['output'].length
         let last_date = output_len ? new Date(j2['output'][0]['TRD_DD']) : moment(options.start_date).add(1, 'day').toDate()
-        if (ddFormat(last_date) == ddFormat(options.end_date))
-            last_date = options.end_date
         if (options.log_datetime)
-            console.log(options.start_date, last_date, end_date_limit)
+            console.log(options.start_date, last_date, options.end_date)
         if  (output_len == 0){
             j2 = await request_company(full_code, default_date) as any
             _save_stock(j2, _path, options.isSimple)
             j2['_status'] = 2
             await sleep(200)
         }
-        else if (options.start_date.valueOf() < last_date.valueOf() && last_date.valueOf() < end_date_limit.valueOf()){
+        else if (options.start_date.valueOf() < last_date.valueOf() && last_date.valueOf() <= options.end_date.valueOf()){
             let j3:CompanyResponse
             if (options.isSimple){
                 let _date = last_date
                 const output:DailySimpleModel[] = []
                 const shortCode = full_code.slice(3, 9)
-                while(_date.valueOf() <= end_date_limit.valueOf()){
+                while(_date.valueOf() <= options.end_date.valueOf()){
                     const cache = bulk_cache[ddFormat(_date)]
                     // console.log('@@', shortCode, cache?1:0, (cache || {})[shortCode])
-                    if (!(cache && cache[shortCode]))
+                    if (!(cache && cache.output[shortCode])){
+                        if (cache && cache.hours == -1){
+                            _date = moment(_date).add(1, 'day').toDate()
+                            continue
+                        }
                         break
-                    if (cache[shortCode].TDD_CLSPRC != '-')
-                        output.push(cache[shortCode])
+                    }
+                    if (cache.output[shortCode].TDD_CLSPRC != '-')
+                        output.push(cache.output[shortCode])
                     _date = moment(_date).add(1, 'day').toDate()
                 }
-                if (_date.valueOf() <= end_date_limit.valueOf())
-                    j3 = await request_company(full_code, {start_date:last_date, end_date:end_date_limit})
+                if (_date.valueOf() <= options.end_date.valueOf())
+                    j3 = await request_company(full_code, {start_date:last_date, end_date:options.end_date})
                 else{
                     // console.log('use bulk: ', full_code)
                     j3 = {
@@ -160,7 +190,7 @@ export async function load_stock_json(full_code:string, options?:{start_date:Dat
                 }
             }
             else
-                j3 = await request_company(full_code, {start_date:last_date, end_date:end_date_limit})
+                j3 = await request_company(full_code, {start_date:last_date, end_date:options.end_date})
             j2['output'] = j3['output'].concat(j2['output'].slice(1))
             j2['CURRENT_DATETIME'] = j3['CURRENT_DATETIME']
             _save_stock(j2, _path, options.isSimple)

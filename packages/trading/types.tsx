@@ -38,6 +38,11 @@ export type CompanyResponseAll = {
     'CURRENT_DATETIME':string
 }
 
+export type CompanyBulk = {
+    'output': Record<string, DailySimpleModel>,
+    'hours'?: number
+}
+
 export type CompanyInfoBlock = {
     marketCode:string
     full_code:string
