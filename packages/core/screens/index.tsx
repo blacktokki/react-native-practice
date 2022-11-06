@@ -1,7 +1,10 @@
 import NotFoundScreen from './NotFoundScreen'
 export default {
-    NotFoundScreen:{
-        component: NotFoundScreen,
-        title: 'Oops!',
-    },
+    key:'NotFound',
+    screens:{
+        NotFoundScreen:{
+            component: NotFoundScreen,
+            title: 'Oops!',
+        },
+    }
 }

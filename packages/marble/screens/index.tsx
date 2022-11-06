@@ -1,8 +1,11 @@
 import DiceScreen from './DiceScreen'
 export default {
-    DiceScreen:{
-        component: DiceScreen,
-        title: 'Tab Dice Title',
-        url: 'dice'
-    },
+    key:'marble',
+    screens:{
+        DiceScreen:{
+            stacks: {defaultStack:DiceScreen},
+            title: 'Tab Dice Title',
+            url: 'dice'
+        },
+    }
 }

@@ -9,7 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "expo-linking": "^2.3.1",
     "lodash": "^4.17.21",
     "react-native-draggable-flatlist": "^2.6.2",
     "react-sortable-hoc": "^2.0.0"
@@ -22,12 +21,14 @@
     "typescript": "~4.0.0"
   },
   "peerDependencies": {
+    "expo-linking": "*",
+    "@react-navigation/drawer": "*",
+    "@react-navigation/native": "*",
+    "@react-navigation/stack": "*",
     "react": "*",
     "react-dom": "*",
     "react-native": "*",
-    "react-native-web": "*",
-    "@react-navigation/drawer": "*",
-    "@react-navigation/native": "*",
-    "@react-navigation/stack": "*"
+    "react-native-reanimated": "*",
+    "react-native-web": "*"
   }
 }

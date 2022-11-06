@@ -7,14 +7,17 @@
 import { PathConfigMap } from '@react-navigation/core';
 import * as Linking from 'expo-linking';
 import Config from './Config';
-import { ScreenPackage } from '../types'
+import { ScreenPackage, StackPackage } from '../types'
 
 const screens:PathConfigMap = {} 
 export function pushScreens(currentValue:ScreenPackage){
-  Object.keys(currentValue).reduce((_previousValue, _currentValue)=>{
-    const _screens:PathConfigMap = {}
-    _screens[_currentValue] = currentValue[_currentValue].url
-    _previousValue[_currentValue.substring(0, _currentValue.lastIndexOf("Screen"))] = { screens:_screens}
+  Object.keys(currentValue.screens).reduce((_previousValue, _currentValue)=>{
+    const screen = currentValue.screens[_currentValue]
+    const _stacks:PathConfigMap = {}
+    for (var k in screen.stacks){
+      _stacks[k] = (screen.stacks[k] as StackPackage).url || ''
+    }
+    _previousValue[_currentValue] = { screens:_stacks, path: screen.url}
     return _previousValue
   }, screens)
 }

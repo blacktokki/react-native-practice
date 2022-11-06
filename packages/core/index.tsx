@@ -1,5 +1,5 @@
 export { default as useColorScheme } from './hooks/useColorScheme';
-export { default as Navigation } from './navigation';
+export { default as Navigation, screenKeys } from './navigation';
 export { default as Config } from './navigation/Config';
 import _ from 'lodash';
 import { pushNavigators, pushScreens } from './navigation'
