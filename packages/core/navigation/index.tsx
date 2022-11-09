@@ -4,15 +4,14 @@
  *
  */
 
-export { pushNavigators, screenKeys } from './DrawerNavigator';
-export { pushScreens } from './LinkingConfiguration'
+import { pushPathConfig } from './LinkingConfiguration'
 import { NavigationContainer, DefaultTheme, DarkTheme, NavigationContainerRef } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
 import { ColorSchemeName } from 'react-native';
 
-import { RootStackParamList } from '../types';
-import DrawerNavigator from './DrawerNavigator';
+import { RootStackParamList, ScreenPackage } from '../types';
+import DrawerNavigator, {pushNavigators, screenKeys} from './DrawerNavigator';
 import LinkingConfiguration from './LinkingConfiguration';
 import Config from './Config'
 
@@ -22,6 +21,14 @@ export function navigate(name:string, params?:any) {
   if (params)
     navigationRef.current?.navigate(name, params);
   navigationRef.current?.navigate(name);
+}
+
+export function initScreenModule(screenPackages:ScreenPackage[], screenKeyList?:string[]){
+  screenPackages.forEach(screens=>{
+    pushNavigators(screens)
+    pushPathConfig(screens)
+  })
+  screenKeyList && screenKeys.set(screenKeyList)
 }
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {

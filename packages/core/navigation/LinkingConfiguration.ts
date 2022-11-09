@@ -10,7 +10,7 @@ import Config from './Config';
 import { ScreenPackage, StackPackage } from '../types'
 
 const screens:PathConfigMap = {} 
-export function pushScreens(currentValue:ScreenPackage){
+export function pushPathConfig(currentValue:ScreenPackage){
   Object.keys(currentValue.screens).reduce((_previousValue, _currentValue)=>{
     const screen = currentValue.screens[_currentValue]
     const _stacks:PathConfigMap = {}
