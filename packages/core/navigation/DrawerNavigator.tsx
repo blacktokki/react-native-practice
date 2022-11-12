@@ -5,24 +5,29 @@
 
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { DrawerScreenProps, createDrawerNavigator } from '@react-navigation/drawer';
-import { createStackNavigator, StackNavigationOptions } from '@react-navigation/stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
 import { Text, ScrollView } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
+import useResizeWindow from '../hooks/useResizeWindow';
 import { DrawerParamList, ScreenPackage, StackPackage } from '../types'
 import Config from './Config'
 import SectionDrawerContent, {NavigatorSections} from './SectionDrawerContent';
+import ResponsiveNavigator, {NavigatorsTitle, tabBarHeight, TabBarNavigation} from './ResponsiveNavigator';
 
+const drawerWidth = 240
 const Drawer = createDrawerNavigator<typeof DrawerParamList>();
 const Navigators:Record<string, JSX.Element[]> = {}
 
 export function pushNavigators(currentValue:ScreenPackage){
   const keys = Object.keys(currentValue.screens)
   NavigatorSections[currentValue.key] = keys
-  Navigators[currentValue.key] = keys.map((value)=>{return DrawerNavigatorGeneric(
+  Navigators[currentValue.key] = keys.map((value)=>{
+    NavigatorsTitle[value] = currentValue.screens[value].title
+    return DrawerNavigatorGeneric(
       value, 
       currentValue.screens[value].title, 
       currentValue.screens[value].useDrawer != false,
@@ -40,6 +45,9 @@ const defaultScreenKeys = {
 export const screenKeys = Object.assign({}, defaultScreenKeys)
 
 export default function DrawerNavigator() {
+  const windowType = Config.ResponsiveNavigator?useResizeWindow():undefined
+  const drawerType = Config.ResponsiveNavigator?'permanent':undefined
+  const drawerStyle = Config.ResponsiveNavigator?{maxWidth:windowType=='portrait'?0:drawerWidth}:undefined
   const [keys, setKeys] = React.useState(screenKeys.get());
   const colorScheme = useColorScheme();
   React.useEffect(()=>{
@@ -47,15 +55,21 @@ export default function DrawerNavigator() {
     screenKeys.set = (keys, screen)=> {setKeys(keys);Config.initialRouteName = screen}
     return ()=>{Object.assign({}, defaultScreenKeys)}
   }, [keys])
+
   return (
-    <Drawer.Navigator
-      initialRouteName={Config.initialRouteName as keyof typeof DrawerParamList}
-      screenOptions={{unmountOnBlur:true}}
-      drawerContent={SectionDrawerContent}
-      drawerContentOptions={{activeTintColor: Colors[colorScheme].tint}}
-    >
-      { keys.map((value)=>Navigators[value]) }
-    </Drawer.Navigator>
+    <>
+      <Drawer.Navigator
+          initialRouteName={Config.initialRouteName as keyof typeof DrawerParamList}
+          screenOptions={{unmountOnBlur:true}}
+          drawerContent={SectionDrawerContent}
+          drawerContentOptions={{activeTintColor: Colors[colorScheme].tint}}
+          drawerType={drawerType}
+          drawerStyle={drawerStyle}
+        >
+          { keys.map((value)=>Navigators[value]) }
+        </Drawer.Navigator>
+        <ResponsiveNavigator keys={keys} ResponsiveNavigator={Config.ResponsiveNavigator} windowType={windowType}/>
+    </>
   );
 }
 
@@ -88,7 +102,8 @@ function StackNavigatorGeneric<RouteName extends keyof typeof DrawerParamList>(n
   const ParamList:Record<string, object | undefined> = {}
   const TabStack = createStackNavigator<typeof ParamList>();
   function TabNavigator({navigation}: DrawerScreenProps<typeof DrawerParamList, RouteName>) {
-    if(!useDrawer)
+    const windowType = Config.ResponsiveNavigator?useResizeWindow():undefined
+    if(!useDrawer || Config.ResponsiveNavigator)
       navigation.closeDrawer()
     return (
       <ScrollView contentContainerStyle={{flex:1}}>
@@ -102,9 +117,9 @@ function StackNavigatorGeneric<RouteName extends keyof typeof DrawerParamList>(n
           component={stack.component || stack}
           options={(option)=>({
             headerTitle: stack.title || title,
-            cardStyle: {overflow:'visible'},
+            cardStyle: {overflow:'visible', marginBottom:windowType=='portrait'?tabBarHeight:undefined},
             headerLeft: (props) => (
-                useDrawer?<TouchableOpacity 
+                useDrawer && Config.ResponsiveNavigator == undefined?<TouchableOpacity 
                   onPress={() => navigation.openDrawer()} 
                   style={{marginLeft:20, borderRadius:6, borderColor:'rgba(27,31,36,0.15)', borderWidth:1, paddingVertical:5, paddingHorizontal:6.5, width:32}}>
                     <FontAwesome size={20} name='bars' color='black' />
@@ -121,3 +136,5 @@ function StackNavigatorGeneric<RouteName extends keyof typeof DrawerParamList>(n
   }
   return TabNavigator
 }
+
+Config.ResponsiveNavigator = TabBarNavigation
