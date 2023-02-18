@@ -6,18 +6,13 @@ import useCachedResources from './useCachedResources';
 
 import _default from '@react-native-practice/default/screens';
 import marble from '@react-native-practice/marble/screens';
-//import trading from '@react-native-practice/trading/screens';
-//import useSyncData from '@react-native-practice/trading/hooks/useSyncData';
 
 export default function App() {
   const isLoadingComplete = useCachedResources();
-  // const [isSyncComplete, syncRender] = useSyncData()
   const colorScheme = useColorScheme();
   useScreenModule([_default, marble], ["default", "marble"])
   if (!isLoadingComplete) {
     return null;
-  } else if(false/*!isSyncComplete*/){
-    // return (<SafeAreaProvider>{syncRender}</SafeAreaProvider>)
   }else {
     return (
       <SafeAreaProvider>

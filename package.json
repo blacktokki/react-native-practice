@@ -7,7 +7,6 @@
     "link:core": "npm link ./packages/core",
     "link:default": "npm link ./packages/default",
     "link:marble": "npm link ./packages/marble",
-    "link:trading": "npm link ./packages/trading",
     "postinstall": "concurrently 'npm:link:*'",
     "start": "expo start",
     "android": "expo start --android",
